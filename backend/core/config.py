@@ -16,8 +16,8 @@ class DatabaseSettings(BaseSettings):
 
     def get_asyncpg_url(self, test: bool = False) -> str:
         if test:
-            return f"postgresql://{self.test_db_user}:{self.test_db_pass}@{self.test_db_host}:{self.test_db_port}/{self.test_db_name}"
-        return f"postgresql://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
+            return f"postgresql+asyncpg://{self.test_db_user}:{self.test_db_pass}@{self.test_db_host}:{self.test_db_port}/{self.test_db_name}"
+        return f"postgresql+asyncpg://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
 
 
 class ApiPrefix(BaseSettings):
