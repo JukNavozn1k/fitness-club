@@ -7,6 +7,6 @@ app.include_router(api_router,
                    prefix=settings.api.prefix)
 
 @app.get('/')
-def test():
+async def test():
     return settings.db
     
