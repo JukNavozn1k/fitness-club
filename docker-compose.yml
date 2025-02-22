@@ -1,0 +1,81 @@
+
+version: "3.8"
+services:
+  backend:
+    build: 
+      context: ./backend/.
+    env_file:
+      - .env
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      TEST_DB_NAME: ${TEST_DB_NAME}
+      TEST_DB_USER: ${TEST_DB_USER}
+      TEST_DB_PASS: ${TEST_DB_PASS}
+      TEST_DB_HOST: ${TEST_DB_HOST}
+      TEST_DB_PORT: ${TEST_DB_PORT}
+
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/backend
+    depends_on:
+      - db
+      - test_db
+    command: >
+      sh -c "uvicorn main:app --reload --host 0.0.0.0"
+
+
+  # frontend:
+  #   build: 
+  #     context: ./frontend/.
+  #   volumes:
+  #     - ./frontend/public:/frontend/public
+  #     - ./frontend/src:/frontend/src
+  #     - ./frontend/package.json:/frontend/package.json
+  #     - ./frontend/package-lock.json:/frontend/package-lock.json
+  #   depends_on:
+  #     - backend
+  #   command: npm start
+  #   environment:
+  #     - WDS_SOCKET_HOST=127.0.0.1 
+  #     - CHOKIDAR_USEPOLLING=true
+  #     - WATCHPACK_POLLING=true 
+  #   ports:
+  #     - 3000:3000
+
+
+  db:
+    image: postgres:16.3-alpine3.20
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      PGPORT : ${DB_PORT}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    hostname: ${DB_HOST}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  test_db:
+    image: postgres:16.3-alpine3.20
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${TEST_DB_NAME}
+      POSTGRES_USER: ${TEST_DB_USER}
+      PGPORT : ${TEST_DB_PORT}
+      POSTGRES_PASSWORD: ${TEST_DB_PASS}
+    hostname: ${TEST_DB_HOST}
+    ports:
+      - "${TEST_DB_PORT}:${TEST_DB_PORT}"
+   
+
+volumes:
+  postgres_data:
