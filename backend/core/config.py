@@ -1,8 +1,11 @@
 from pydantic_settings import BaseSettings
 
 class Auth(BaseSettings):
-    secret_key : str = 'DDD'
-    refresh_key : str = 'BBB'
+    secret_key : str = 'foo'
+    refresh_key : str = 'bar'
+
+    lifetime_secret: int = 15 # time in days
+    lifetime_refresh: int = 15
 
 class Database(BaseSettings):
     db_name: str
