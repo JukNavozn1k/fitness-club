@@ -1,7 +1,11 @@
 from pydantic_settings import BaseSettings,SettingsConfigDict
 from pydantic import BaseModel
 
-class DatabaseSettings(BaseSettings):
+class Auth(BaseSettings):
+    secret_key : str = 'DDD'
+    refresh_key : str = 'BBB'
+
+class Database(BaseSettings):
     db_name: str
     db_user: str
     db_pass: str
@@ -31,7 +35,8 @@ class ApiPrefix(BaseSettings):
 
 class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
-    db: DatabaseSettings = DatabaseSettings()
+    db: Database = Database()
+    auth: Auth = Auth()
 
 
 settings = Settings()

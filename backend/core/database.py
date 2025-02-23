@@ -6,7 +6,7 @@ from core.config import settings
 Base = declarative_base()
 
 # Создаём engine для основной (боевой) БД.
-engine = create_async_engine(settings.db.get_url(), echo=False)
+engine = create_async_engine(settings.db.get_url(), echo=settings.db.echo)
 
 AsyncSessionLocal = sessionmaker(
     bind=engine,
