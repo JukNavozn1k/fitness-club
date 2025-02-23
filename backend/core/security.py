@@ -1,14 +1,14 @@
 import jwt
 import datetime
-from fastapi.security.oauth2 import OAuth2PasswordBearer
-from passlib.context import CryptContext
+# from fastapi.security.oauth2 import OAuth2PasswordBearer
+# from passlib.context import CryptContext
 
 from core.config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-# Хеширует пароли с солью
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# # Хеширует пароли с солью
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Функция для создания access токена
 def create_access_token(sub):
