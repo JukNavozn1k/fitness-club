@@ -48,18 +48,3 @@ def decode_refresh_token(token):
     except jwt.InvalidTokenError:
         return "Invalid refresh token"
 
-if __name__ == "__main__":
-    # Пример использования
-    sub = 'user_123'  # Здесь мы используем 'sub' как уникальный идентификатор пользователя
-
-
-    # Создание токенов
-    access_token = create_access_token(sub)
-    refresh_token = create_refresh_token(sub)
-
-    print("Access Token:", access_token)
-    print("Refresh Token:", refresh_token)
-
-    # Декодирование токенов
-    print("Decoded Access Token:", decode_access_token(access_token))
-    print("Decoded Refresh Token:", decode_refresh_token(refresh_token))

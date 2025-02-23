@@ -1,5 +1,9 @@
 from pydantic_settings import BaseSettings
 
+class App(BaseSettings):
+    title: str = 'FastAPI'
+    version : str = '1.0.0'
+
 class Auth(BaseSettings):
     secret_key : str = 'foo'
     refresh_key : str = 'bar'
@@ -32,6 +36,7 @@ class Database(BaseSettings):
     
 
 class Settings(BaseSettings):
+    app: App = App()
     db: Database = Database()
     auth: Auth = Auth()
 
