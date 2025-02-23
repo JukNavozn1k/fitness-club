@@ -1,5 +1,4 @@
-from pydantic_settings import BaseSettings,SettingsConfigDict
-from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
 class Auth(BaseSettings):
     secret_key : str = 'DDD'
@@ -29,12 +28,7 @@ class Database(BaseSettings):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
     
 
-
-class ApiPrefix(BaseSettings):
-    prefix: str = '/api'
-
 class Settings(BaseSettings):
-    api: ApiPrefix = ApiPrefix()
     db: Database = Database()
     auth: Auth = Auth()
 
