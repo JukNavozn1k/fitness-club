@@ -8,8 +8,6 @@ class Auth(BaseSettings):
     secret_key : str = 'foo'
     refresh_key : str = 'bar'
 
-    oauth2_token_url : str = '/auth/token'
-
     lifetime_secret: int = 15 # time in days
     lifetime_refresh: int = 15
 
