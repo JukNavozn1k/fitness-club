@@ -21,8 +21,8 @@ class AuthService:
         except jwt.InvalidTokenError:
             raise jwt.InvalidTokenError("Invalid token")
 
-    # Функция для парсинга токена из заголовка
-    def get_token_from_header(self, authorization: Optional[str] = None, is_refresh: bool = False):
+    # Функция для парсинга токена из заголовка HTTP запроса
+    def parse_token(self, authorization: Optional[str] = None, is_refresh: bool = False):
         if authorization is None:
             raise ValueError("Authorization header missing")
         
