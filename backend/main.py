@@ -6,6 +6,5 @@ from core.config import settings
 from api import router as api_router
 app = FastAPI(title=settings.app.title, version=settings.app.version)
 app.include_router(api_router,
-                   prefix='/api',
                    default_response_class=ORJSONResponse)
 
