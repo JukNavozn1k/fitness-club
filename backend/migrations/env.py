@@ -10,7 +10,11 @@ from alembic import context
 from core.config import settings
 from core.database import Base
 
-import models
+import pkgutil
+import importlib
+import models  # Импортируем пакет models, чтобы получить его __path__
+
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,6 +33,10 @@ if config.config_file_name is not None:
 config.set_main_option("sqlalchemy.url", settings.db.get_url())
 
 target_metadata = Base.metadata
+
+# Dynamic model import
+for loader, module_name, is_pkg in pkgutil.iter_modules(models.__path__):
+    importlib.import_module(f"models.{module_name}")
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

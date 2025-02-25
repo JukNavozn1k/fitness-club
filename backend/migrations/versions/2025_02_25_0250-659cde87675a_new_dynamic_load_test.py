@@ -1,8 +1,8 @@
-"""autofetch // user model
+"""new dynamic load test
 
-Revision ID: f4b0eba6fb63
+Revision ID: 659cde87675a
 Revises: 
-Create Date: 2025-02-23 10:39:06.859859
+Create Date: 2025-02-25 02:50:07.560787
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f4b0eba6fb63'
+revision: str = '659cde87675a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
