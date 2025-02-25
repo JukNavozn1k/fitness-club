@@ -1,7 +1,17 @@
-from pydantic_settings import BaseSettings,SettingsConfigDict
-from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
-class DatabaseSettings(BaseSettings):
+class App(BaseSettings):
+    title: str = 'FastAPI'
+    version : str = '1.0.0'
+
+class Auth(BaseSettings):
+    secret_key : str = 'foo'
+    refresh_key : str = 'bar'
+
+    lifetime_secret: int = 15 # time in days
+    lifetime_refresh: int = 15
+
+class Database(BaseSettings):
     db_name: str
     db_user: str
     db_pass: str
@@ -25,13 +35,10 @@ class DatabaseSettings(BaseSettings):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
     
 
-
-class ApiPrefix(BaseSettings):
-    prefix: str = '/api'
-
 class Settings(BaseSettings):
-    api: ApiPrefix = ApiPrefix()
-    db: DatabaseSettings = DatabaseSettings()
+    app: App = App()
+    db: Database = Database()
+    auth: Auth = Auth()
 
 
 settings = Settings()

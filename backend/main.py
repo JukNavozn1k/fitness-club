@@ -1,12 +1,10 @@
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 
 from core.config import settings
-from api import router as api_router
-app = FastAPI()
-app.include_router(api_router,
-                   prefix=settings.api.prefix)
 
-@app.get('/')
-async def test():
-    return settings.db
-    
+from api import router as api_router
+app = FastAPI(title=settings.app.title, version=settings.app.version)
+app.include_router(api_router,
+                   default_response_class=ORJSONResponse)
+
