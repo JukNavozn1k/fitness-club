@@ -35,6 +35,9 @@ class AuthService:
         return self.decode_token(token, is_refresh)
     
 
+auth_service = AuthService()
+
+
 # # Пример использования на fast api
 # @app.get("/secure-data")
 # async def get_secure_data(authorization: Optional[str] = Header(None)):
