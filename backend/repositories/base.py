@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from sqlalchemy.future import select
-from sqlalchemy.inspection import inspect
+from sqlalchemy import inspect
+from sqlalchemy.orm import class_mapper
 from typing import List, Dict, Optional, Any
 
 class AbstractRepository(ABC):
@@ -34,29 +35,42 @@ class AbstractSQLRepository(AbstractRepository, ABC):
         self.get_session = get_session
         self.model = model
 
-    def _to_dict(self, instance) -> Dict:
-        """Конвертирует SQLAlchemy-объект в словарь (с поддержкой relationship)."""
-        if hasattr(instance, "dict"):  # Если в SQLAlchemy 2.0 есть метод `.dict()`
-            return instance.dict()
+    def _to_dict(self, instance, visited=None):
+        if visited is None:
+            visited = set()
+            
+        # Преобразуем колонки модели в словарь
+        result = {
+            column.key: getattr(instance, column.key)
+            for column in class_mapper(instance.__class__).columns
+        }
+        
+        # Получаем объект-инспектор для проверки состояния загрузки атрибутов
+        state = inspect(instance)
+        
+        for name, relation in class_mapper(instance.__class__).relationships.items():
+            if relation not in visited:
+                visited.add(relation)
+                
+                # Если атрибут не загружен, он будет присутствовать в state.unloaded
+                if name in state.unloaded:
+                    # Возвращаем внешний ключ, если он определён
+                    fk_value = getattr(instance, f"{name}_id", None)
+                    if fk_value is not None:
+                        result[f"{name}_id"] = fk_value
+                else:
+                    # Если атрибут загружен, обрабатываем его
+                    related_obj = getattr(instance, name)
+                    if related_obj is not None:
+                        if relation.uselist:
+                            result[name] = [
+                                self._to_dict(child, visited) for child in related_obj
+                            ]
+                        else:
+                            result[name] = self._to_dict(related_obj, visited)
+        return result
 
-        serialized = {}
-        mapper = inspect(instance)
-
-        # Колонки (обычные поля модели)
-        for column in mapper.mapper.column_attrs:
-            serialized[column.key] = getattr(instance, column.key)
-
-        # Отношения (relationship)
-        for rel in mapper.mapper.relationships:
-            related_obj = getattr(instance, rel.key)
-            if related_obj is not None:
-                if isinstance(related_obj, list):  # One-to-Many
-                    serialized[rel.key] = [self._to_dict(obj) for obj in related_obj]
-                else:  # One-to-One
-                    serialized[rel.key] = self._to_dict(related_obj)
-
-        return serialized
-
+    
     async def create(self, data: Dict) -> Dict:
         async with self.get_session() as session:
             instance = self.model(**data)
