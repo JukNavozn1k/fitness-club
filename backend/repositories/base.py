@@ -20,7 +20,14 @@ class AbstractRepository(ABC):
         Возвращает объект модели или None, если объект не найден.
         """
         raise NotImplementedError
-
+    
+    @abstractmethod
+    async def retrieve_by_field(self, pk: int) -> Optional[T]:
+        """
+        Извлекает объект по любому полю.
+        Возвращает объект модели или None, если объект не найден.
+        """
+        raise NotImplementedError
     @abstractmethod
     async def list(self) -> List[T]:
         """

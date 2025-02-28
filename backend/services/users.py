@@ -23,5 +23,9 @@ class UserService:
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
         return hashed_password.decode('utf-8')
+    
+    def check_password(self, password: str, hashed_password: str) -> bool:
+        # Проверяем, совпадает ли введённый пароль с хешированным
+        return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 user_service = UserService(sql_user_repository, auth_service)
