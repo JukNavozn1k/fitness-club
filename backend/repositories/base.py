@@ -64,6 +64,11 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             result = await session.execute(select(self.model).filter(self.model.id == pk))
             return result.scalar_one_or_none()
 
+    async def retrieve_by_field(self, field_name: str, value: any) -> Optional[T]:
+        async with self.get_session() as session:
+            query = select(self.model).filter(getattr(self.model, field_name) == value)
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
     async def list(self) -> List[T]:
         async with self.get_session() as session:
             result = await session.execute(select(self.model))

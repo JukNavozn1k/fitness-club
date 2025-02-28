@@ -1,5 +1,6 @@
 import jwt
 from typing import Optional
+from datetime import datetime, timedelta
 from core.config import settings
 
 class AuthService:
@@ -7,6 +8,28 @@ class AuthService:
         # Устанавливаем секретные ключи для кодирования и декодирования токенов
         self.secret_key = settings.auth.secret_key
         self.refresh_key = settings.auth.refresh_key
+        self.access_token_expiration = settings.auth.access_token_expiration  # например, 15 минут
+        self.refresh_token_expiration = settings.auth.refresh_token_expiration  # например, 7 дней
+
+    def create_access_token(self, data: dict):
+        """
+        Создает access token с коротким сроком действия
+        """
+        expiration = datetime.utcnow() + timedelta(minutes=self.access_token_expiration)
+        to_encode = data.copy()
+        to_encode.update({"exp": expiration})
+        encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm='HS256')
+        return encoded_jwt
+
+    def create_refresh_token(self, data: dict):
+        """
+        Создает refresh token с более длительным сроком действия
+        """
+        expiration = datetime.utcnow() + timedelta(days=self.refresh_token_expiration)
+        to_encode = data.copy()
+        to_encode.update({"exp": expiration})
+        encoded_jwt = jwt.encode(to_encode, self.refresh_key, algorithm='HS256')
+        return encoded_jwt
 
     def decode_token(self, token: str, is_refresh: bool = False):
         key = self.refresh_key if is_refresh else self.secret_key
