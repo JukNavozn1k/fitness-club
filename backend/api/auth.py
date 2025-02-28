@@ -8,9 +8,10 @@ from services.users import user_service
 
 router = APIRouter(prefix='/auth',tags=['Authentication'])
 
-@router.post('/login')
+@router.post('/login',response_model=UserSchema)
 async def login(schema: AuthSchema):
-    return {}
+    user = await user_service.login(schema.model_dump())
+    return user
 
 @router.post('/register',response_model=UserSchema)
 async def register(schema: AuthSchema):

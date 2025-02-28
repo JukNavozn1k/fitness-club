@@ -8,10 +8,8 @@ class UserService:
         self.repository = repository
         self.auth_service = auth_service
         
-
     async def login(self,data: dict):
-        data['password'] = self.hash_password(data['password'])
-        res = await self.repository.create(data)
+        res = await self.repository.retrieve_by_username(data['username'])
         return res
     async def register(self,data: dict):
         data['password'] = self.hash_password(data['password'])
