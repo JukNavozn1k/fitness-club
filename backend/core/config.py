@@ -8,8 +8,8 @@ class Auth(BaseSettings):
     secret_key : str = 'foo'
     refresh_key : str = 'bar'
 
-    lifetime_secret: int = 15 # time in days
-    lifetime_refresh: int = 15
+    access_token_expiration: int = 15 # time in days
+    refresh_token_expiration: int = 15
 
 class Database(BaseSettings):
     db_name: str
