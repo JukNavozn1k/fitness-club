@@ -19,7 +19,7 @@ class AuthService:
         to_encode = data.copy()
         to_encode.update({"exp": expiration})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm='HS256')
-        return encoded_jwt
+        return {'token': encoded_jwt, 'type' : 'Bearer'}
 
     def create_refresh_token(self, data: dict):
         """
@@ -29,7 +29,8 @@ class AuthService:
         to_encode = data.copy()
         to_encode.update({"exp": expiration})
         encoded_jwt = jwt.encode(to_encode, self.refresh_key, algorithm='HS256')
-        return encoded_jwt
+        return {'token': encoded_jwt, 'type' : 'Bearer'}
+
 
     def decode_token(self, token: str, is_refresh: bool = False):
         key = self.refresh_key if is_refresh else self.secret_key

@@ -24,10 +24,8 @@ class Database(BaseSettings):
     test_db_host: str
     test_db_port: int
 
-    echo: bool = False
-    echo_pool: bool = False
-    pool_size: int = 50
-    max_overflow: int = 10
+    echo: bool = True
+    
 
     def get_url(self, test: bool = False) -> str:
         if test:

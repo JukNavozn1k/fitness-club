@@ -29,4 +29,4 @@ class Database:
     async def dispose(self):
         await self.engine.dispose()
 
-db = Database(settings.db.get_url())
+db = Database(settings.db.get_url(),settings.db.echo)
