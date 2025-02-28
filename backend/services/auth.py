@@ -33,7 +33,6 @@ class AuthService:
 
     def decode_token(self, token: str, is_refresh: bool = False):
         key = self.refresh_key if is_refresh else self.secret_key
-        
         try:
             decoded = jwt.decode(token, key, algorithms=['HS256'])
             return decoded
