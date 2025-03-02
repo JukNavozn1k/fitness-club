@@ -26,7 +26,6 @@ async def register(schema: AuthSchema):
     except Exception as e:
         raise HTTPException(status_code=409,detail='User already exists')
 
-
 @router.get('/verify-token',response_model=TokenVerifySchema)
 async def verify_token(token : str = Header()):
     try:
