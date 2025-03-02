@@ -13,6 +13,4 @@ app = FastAPI(title=settings.app.title, version=settings.app.version)
 app.include_router(api_router, default_response_class=ORJSONResponse)
 
 admin.update_app(app)
-
-
 admin.auto_register_all_models(models)
