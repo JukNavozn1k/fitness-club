@@ -30,7 +30,8 @@ async def register(schema: AuthSchema):
 @router.get('/verify-token',response_model=TokenVerifySchema)
 async def verify_token(token : str = Header()):
     try:
-        token = auth_service.decode_token(token)
+        token = auth_service.parse_token(token)
         return {'valid':True}
     except Exception as e:
+        print(e)
         return {'valid':False}
