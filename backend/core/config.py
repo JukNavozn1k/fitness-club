@@ -26,7 +26,6 @@ class Database(BaseSettings):
 
     echo: bool = True
     
-
     def get_url(self, test: bool = False) -> str:
         if test:
             return f"postgresql+asyncpg://{self.test_db_user}:{self.test_db_pass}@{self.test_db_host}:{self.test_db_port}/{self.test_db_name}"

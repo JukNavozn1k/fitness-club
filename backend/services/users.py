@@ -10,6 +10,7 @@ class UserService:
         
     async def login(self,data: dict):
         res = await self.repository.retrieve_by_username(data['username'])
+        if res is None: return None
         if self.check_password(data['password'], res['password']):
             return self.auth_service.create_access_token({'sub': res['id']})
         return None
@@ -27,5 +28,10 @@ class UserService:
     def check_password(self, password: str, hashed_password: str) -> bool:
         # Проверяем, совпадает ли введённый пароль с хешированным
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+    
+    async def retrieve_by_token(self, token: str) -> dict:
+        token = self.auth_service.parse_token(token)
+        user_id = int(token['sub'])
+        return await self.repository.retrieve(user_id)
 
 user_service = UserService(sql_user_repository, auth_service)
