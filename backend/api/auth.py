@@ -39,4 +39,7 @@ async def verify_token(token : str = Header()):
 
 @router.get('/me',response_model=UserSchema)
 async def me(token : str = Header()):
-    return await user_service.retrieve_by_token(token)
+    try:
+        return await user_service.retrieve_by_token(token)
+    except Exception as e:
+        raise HTTPException(status_code=401,detail='Invalid token')
