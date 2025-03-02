@@ -230,31 +230,6 @@ all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>
 standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
-name = "fastapi-amis-admin"
-version = "0.7.2"
-description = "FastAPI-Amis-Admin is a high-performance, efficient and easily extensible FastAPI admin framework. Inspired by Django-admin, and has as many powerful functions as Django-admin. "
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "fastapi_amis_admin-0.7.2-py3-none-any.whl", hash = "sha256:919840af27dcd831d5dadbd1a57ad61c2dda5dd8ae2880cd4e03e23c0401f48c"},
-    {file = "fastapi_amis_admin-0.7.2.tar.gz", hash = "sha256:e80d93acbb2a4840ef597f901204d8f43029541724333924f34b9468aa644582"},
-]
-
-[package.dependencies]
-aiofiles = ">=0.17.0"
-fastapi = ">=0.103.2"
-python-multipart = ">=0.0.5"
-sqlalchemy-database = ">=0.1.1,<0.2.0"
-sqlmodel = ">=0.0.14,<0.1.0"
-
-[package.extras]
-cli = ["fastapi-amis-admin-cli (>=0.2.1,<0.3.0)"]
-dev = ["pre-commit (>=2.20.0)", "ruff (>=0.0.261)"]
-standard = ["fastapi-amis-admin-cli (>=0.2.1,<0.3.0)", "uvicorn[standard] (>=0.19.0,<1.0)"]
-test = ["aiosqlite (>=0.15.0)", "fastapi-amis-admin-cli (>=0.2.1,<0.3.0)", "httpx (>=0.24.0,<1.0)", "jinja2 (>=2.11.2,<4.0.0)", "pydantic-settings (>=2.0.0)", "pytest (>=6.2.4)", "pytest-asyncio (>=0.17)", "requests (>=2.28.1)", "ujson (>=4.0.1)", "uvicorn[standard] (>=0.19.0,<1.0)"]
-
-[[package]]
 name = "greenlet"
 version = "3.1.1"
 description = "Lightweight in-process concurrent programming"
@@ -427,6 +402,24 @@ files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
     {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
 ]
+
+[[package]]
+name = "jinja2"
+version = "3.1.5"
+description = "A very fast and expressive template engine."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb"},
+    {file = "jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb"},
+]
+
+[package.dependencies]
+MarkupSafe = ">=2.0"
+
+[package.extras]
+i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "mako"
@@ -805,6 +798,28 @@ files = [
 ]
 
 [[package]]
+name = "sqladmin"
+version = "0.20.1"
+description = "SQLAlchemy admin for FastAPI and Starlette"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "sqladmin-0.20.1-py3-none-any.whl", hash = "sha256:82310bb5b4cc2563494e42a03ef0b269030d78f6df4f6a331837f0f124d10dae"},
+    {file = "sqladmin-0.20.1.tar.gz", hash = "sha256:b6cc6df648a8a05f7baa57cd5fc236cf0729d0bb27b0a33ced150e956fa68437"},
+]
+
+[package.dependencies]
+jinja2 = "*"
+python-multipart = "*"
+sqlalchemy = ">=1.4"
+starlette = "*"
+wtforms = ">=3.1,<3.2"
+
+[package.extras]
+full = ["itsdangerous"]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.38"
 description = "Database Abstraction Library"
@@ -901,41 +916,6 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
-name = "sqlalchemy-database"
-version = "0.1.2"
-description = "SQLAlchemy-Database provides shortcut functions to common database operations for SQLAlchemy ORM."
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "sqlalchemy_database-0.1.2-py3-none-any.whl", hash = "sha256:f9e5ff8cc607883673aedd9179c743e6550240bcca2084ff63771586cab8b3b4"},
-    {file = "sqlalchemy_database-0.1.2.tar.gz", hash = "sha256:85720ed45b10e2c02fd02b82b770c735b2644cda38ddab9c0cb94348b6e8e839"},
-]
-
-[package.dependencies]
-sqlalchemy = "*"
-
-[package.extras]
-docs = ["mkdocs-material (>=8.3.8)", "mkdocstrings[python] (>=0.19.0)"]
-test = ["aiosqlite", "fastapi", "httpx", "pytest (>=6.2.4,<7.0.0)", "pytest-asyncio (>=0.17)", "pytest-cov", "sqlmodel"]
-
-[[package]]
-name = "sqlmodel"
-version = "0.0.23"
-description = "SQLModel, SQL databases in Python, designed for simplicity, compatibility, and robustness."
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "sqlmodel-0.0.23-py3-none-any.whl", hash = "sha256:93810464b11810845920e0fedfabb31af2ccc2bb670637e9445da7ccee5f9f46"},
-    {file = "sqlmodel-0.0.23.tar.gz", hash = "sha256:2b36be0d8b751c211864ec59c8c07c008078dbdeaf516f597eb61880a615197b"},
-]
-
-[package.dependencies]
-pydantic = ">=1.10.13,<3.0.0"
-SQLAlchemy = ">=2.0.14,<2.1.0"
-
-[[package]]
 name = "starlette"
 version = "0.45.3"
 description = "The little ASGI library that shines."
@@ -984,7 +964,25 @@ h11 = ">=0.8"
 [package.extras]
 standard = ["colorama (>=0.4)", "httptools (>=0.6.3)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.4)"]
 
+[[package]]
+name = "wtforms"
+version = "3.1.2"
+description = "Form validation and rendering for Python web development."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "wtforms-3.1.2-py3-none-any.whl", hash = "sha256:bf831c042829c8cdbad74c27575098d541d039b1faa74c771545ecac916f2c07"},
+    {file = "wtforms-3.1.2.tar.gz", hash = "sha256:f8d76180d7239c94c6322f7990ae1216dae3659b7aa1cee94b6318bdffb474b9"},
+]
+
+[package.dependencies]
+markupsafe = "*"
+
+[package.extras]
+email = ["email-validator"]
+
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "e05a042c67fee6a67dd84813ecdf399868b1fd31a53f4e8cad185e3b3f651aba"
+content-hash = "0e360aa9f62478208f9a610c5107d7aed6c6d00ba9ef172033a1b0c06cc6654b"
