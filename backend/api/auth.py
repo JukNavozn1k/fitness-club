@@ -1,9 +1,10 @@
-from fastapi import APIRouter,HTTPException,status
+from fastapi import APIRouter,HTTPException,status,Header
 
-from schemas.auth import AuthSchema,TokenSchema
+from schemas.auth import AuthSchema,TokenSchema,TokenVerifySchema
 from schemas.users import UserSchema
 
 from services.users import user_service
+from services.auth import auth_service
 
 router = APIRouter(prefix='/auth',tags=['Authentication'])
 
@@ -24,3 +25,12 @@ async def register(schema: AuthSchema):
         return user
     except Exception as e:
         raise HTTPException(status_code=409,detail='User already exists')
+
+
+@router.get('/verify-token',response_model=TokenVerifySchema)
+async def verify_token(token : str = Header()):
+    try:
+        token = auth_service.decode_token(token)
+        return {'valid':True}
+    except Exception as e:
+        return {'valid':False}

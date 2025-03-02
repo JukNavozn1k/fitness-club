@@ -15,8 +15,10 @@ class AuthService:
         """
         Создает access token с коротким сроком действия
         """
-        expiration = datetime.utcnow() + timedelta(minutes=self.access_token_expiration)
+        expiration = datetime.utcnow() + timedelta(days=self.access_token_expiration)
         to_encode = data.copy()
+        if "sub" in to_encode:
+            to_encode["sub"] = str(to_encode["sub"])
         to_encode.update({"exp": expiration})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm='HS256')
         return {'token': encoded_jwt, 'type' : 'Bearer'}

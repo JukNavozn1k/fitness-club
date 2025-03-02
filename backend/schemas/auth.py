@@ -7,3 +7,6 @@ class AuthSchema(BaseModel):
 class TokenSchema(BaseModel):
     token: str
     type: str
+
+class TokenVerifySchema(BaseModel):
+    valid: bool
