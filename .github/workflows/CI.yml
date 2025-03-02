@@ -14,6 +14,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          DB_NAME=gg
+          DB_USER=gleb
+          DB_PASS=1234
+          DB_HOST=db
+          DB_PORT=5432
+          TEST_DB_NAME=gg_test
+          TEST_DB_USER=gleb_test
+          TEST_DB_PASS=1234
+          TEST_DB_HOST=db_test
+          TEST_DB_PORT=5430
+          EOF
+
       - name: Build and run containers
         run: docker-compose up -d
 
