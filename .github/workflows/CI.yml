@@ -36,7 +36,10 @@ jobs:
         run: sleep 10
 
       - name: Run tests in backend container
-        run: docker-compose exec backend pytest --maxfail=1 --disable-warnings -q
+        run: docker-compose exec -T backend pytest --maxfail=1 --disable-warnings -q
 
       - name: Tear down containers and remove volumes
         run: docker-compose down -v
+
+      - name: Auto-cleanup Docker system
+        run: docker system prune -f --volumes
