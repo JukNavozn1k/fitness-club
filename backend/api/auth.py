@@ -35,3 +35,8 @@ async def verify_token(token : str = Header()):
     except Exception as e:
         print(e)
         return {'valid':False}
+
+
+@router.get('/me',response_model=UserSchema)
+async def me(token : str = Header()):
+    return await user_service.retrieve_by_token(token)
