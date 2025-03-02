@@ -14,12 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Docker and Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io docker-compose
-          sudo systemctl start docker
-
       - name: Create .env file
         run: |
           cat <<EOF > .env
@@ -36,13 +30,13 @@ jobs:
           EOF
 
       - name: Build and run containers
-        run: sudo docker-compose up -d
+        run: docker-compose up -d
 
       - name: Wait for services to initialize
         run: sleep 10
 
       - name: Run tests in backend container
-        run: sudo docker-compose exec backend pytest --maxfail=1 --disable-warnings -q
+        run: docker-compose exec backend pytest --maxfail=1 --disable-warnings -q
 
       - name: Tear down containers and remove volumes
-        run: sudo docker-compose down -v
+        run: docker-compose down -v
