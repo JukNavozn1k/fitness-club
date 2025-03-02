@@ -230,6 +230,31 @@ all = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>
 standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "httpx (>=0.23.0)", "jinja2 (>=3.1.5)", "python-multipart (>=0.0.18)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
+name = "fastapi-amis-admin"
+version = "0.7.2"
+description = "FastAPI-Amis-Admin is a high-performance, efficient and easily extensible FastAPI admin framework. Inspired by Django-admin, and has as many powerful functions as Django-admin. "
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "fastapi_amis_admin-0.7.2-py3-none-any.whl", hash = "sha256:919840af27dcd831d5dadbd1a57ad61c2dda5dd8ae2880cd4e03e23c0401f48c"},
+    {file = "fastapi_amis_admin-0.7.2.tar.gz", hash = "sha256:e80d93acbb2a4840ef597f901204d8f43029541724333924f34b9468aa644582"},
+]
+
+[package.dependencies]
+aiofiles = ">=0.17.0"
+fastapi = ">=0.103.2"
+python-multipart = ">=0.0.5"
+sqlalchemy-database = ">=0.1.1,<0.2.0"
+sqlmodel = ">=0.0.14,<0.1.0"
+
+[package.extras]
+cli = ["fastapi-amis-admin-cli (>=0.2.1,<0.3.0)"]
+dev = ["pre-commit (>=2.20.0)", "ruff (>=0.0.261)"]
+standard = ["fastapi-amis-admin-cli (>=0.2.1,<0.3.0)", "uvicorn[standard] (>=0.19.0,<1.0)"]
+test = ["aiosqlite (>=0.15.0)", "fastapi-amis-admin-cli (>=0.2.1,<0.3.0)", "httpx (>=0.24.0,<1.0)", "jinja2 (>=2.11.2,<4.0.0)", "pydantic-settings (>=2.0.0)", "pytest (>=6.2.4)", "pytest-asyncio (>=0.17)", "requests (>=2.28.1)", "ujson (>=4.0.1)", "uvicorn[standard] (>=0.19.0,<1.0)"]
+
+[[package]]
 name = "greenlet"
 version = "3.1.1"
 description = "Lightweight in-process concurrent programming"
@@ -756,6 +781,18 @@ docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1)"]
 testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.20"
+description = "A streaming multipart parser for Python"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104"},
+    {file = "python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13"},
+]
+
+[[package]]
 name = "sniffio"
 version = "1.3.1"
 description = "Sniff out which async library your code is running under"
@@ -864,6 +901,41 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
+name = "sqlalchemy-database"
+version = "0.1.2"
+description = "SQLAlchemy-Database provides shortcut functions to common database operations for SQLAlchemy ORM."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "sqlalchemy_database-0.1.2-py3-none-any.whl", hash = "sha256:f9e5ff8cc607883673aedd9179c743e6550240bcca2084ff63771586cab8b3b4"},
+    {file = "sqlalchemy_database-0.1.2.tar.gz", hash = "sha256:85720ed45b10e2c02fd02b82b770c735b2644cda38ddab9c0cb94348b6e8e839"},
+]
+
+[package.dependencies]
+sqlalchemy = "*"
+
+[package.extras]
+docs = ["mkdocs-material (>=8.3.8)", "mkdocstrings[python] (>=0.19.0)"]
+test = ["aiosqlite", "fastapi", "httpx", "pytest (>=6.2.4,<7.0.0)", "pytest-asyncio (>=0.17)", "pytest-cov", "sqlmodel"]
+
+[[package]]
+name = "sqlmodel"
+version = "0.0.23"
+description = "SQLModel, SQL databases in Python, designed for simplicity, compatibility, and robustness."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "sqlmodel-0.0.23-py3-none-any.whl", hash = "sha256:93810464b11810845920e0fedfabb31af2ccc2bb670637e9445da7ccee5f9f46"},
+    {file = "sqlmodel-0.0.23.tar.gz", hash = "sha256:2b36be0d8b751c211864ec59c8c07c008078dbdeaf516f597eb61880a615197b"},
+]
+
+[package.dependencies]
+pydantic = ">=1.10.13,<3.0.0"
+SQLAlchemy = ">=2.0.14,<2.1.0"
+
+[[package]]
 name = "starlette"
 version = "0.45.3"
 description = "The little ASGI library that shines."
@@ -915,4 +987,4 @@ standard = ["colorama (>=0.4)", "httptools (>=0.6.3)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "94c52f95f7e0fea9a23d342247eedee883f4e8cf8bb2a93c49380fc003499c8c"
+content-hash = "e05a042c67fee6a67dd84813ecdf399868b1fd31a53f4e8cad185e3b3f651aba"
