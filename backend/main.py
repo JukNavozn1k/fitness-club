@@ -7,7 +7,7 @@ import models
 from api import router as api_router
 
 from core.config import settings
-from core.admin import admin
+from admin import admin
 
 app = FastAPI(title=settings.app.title, version=settings.app.version)
 app.include_router(api_router, default_response_class=ORJSONResponse)

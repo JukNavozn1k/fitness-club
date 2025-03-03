@@ -2,12 +2,13 @@ import pkgutil
 import importlib
 from sqladmin import Admin as SQLAdmin, ModelView  # Импортируем ModelView напрямую
 from sqlalchemy import inspect
-from fastapi import FastAPI
 
 from core.database import db, Base  # Используем Base из core/database.py
 
+from admin.auth import admin_auth
+
 class Admin:
-    def __init__(self, db, app: FastAPI = None):
+    def __init__(self, db, app, auth):
         """
         Инициализация класса для работы с SQLAdmin.
         :param db: объект базы данных (инфраструктурный слой)
@@ -15,12 +16,13 @@ class Admin:
         """
         self.db = db
         self.app = app
-        self.admin = SQLAdmin(app, db.engine) if app else None
+        self.auth = auth
+        self.admin = SQLAdmin(app, self.db.engine,authentication_backend=self.auth) if app and auth else None
 
-    def update_app(self, app: FastAPI):
+    def update_app(self, app):
         """Метод для обновления app (если это нужно)."""
         self.app = app
-        self.admin = SQLAdmin(app, self.db.engine)
+        self.admin = SQLAdmin(self.app, self.db.engine,authentication_backend=self.auth)
 
     def register_model(self, model):
         """Регистрация модели в админке."""
@@ -45,4 +47,4 @@ class Admin:
                     self.register_model(attr)
 
 
-admin = Admin(db)
+admin = Admin(db,None,admin_auth)
