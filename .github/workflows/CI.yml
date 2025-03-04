@@ -16,23 +16,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up .env file for Docker Compose
+      - name: Build and start Docker Compose services with environment variables
         run: |
-          cp .env .env # Убедитесь, что .env доступен для Docker Compose
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and start Docker Compose services
-        run: |
+          DB_NAME=gg \
+          DB_USER=gleb \
+          DB_PASS=1234 \
+          DB_HOST=db \
+          DB_PORT=5432 \
+          TEST_DB_NAME=gg_test \
+          TEST_DB_USER=gleb_test \
+          TEST_DB_PASS=1234 \
+          TEST_DB_HOST=db_test \
+          TEST_DB_PORT=5430 \
           docker-compose -f docker-compose.yml up -d
 
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for backend to be ready..."
-          # Пауза, чтобы дать контейнерам время для запуска
           sleep 10
-          # Проверка, что приложение доступно на порту 8000
           curl --retry 10 --retry-delay 5 --max-time 30 http://localhost:8000
 
       - name: Shut down containers
