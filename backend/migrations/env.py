@@ -10,8 +10,9 @@ from alembic import context
 from core.config import settings
 from core.database import Base
 
-import pkgutil
-import importlib
+from utils.modules import load_modules
+
+
 import models  # Импортируем пакет models, чтобы получить его __path__
 
 
@@ -35,8 +36,7 @@ config.set_main_option("sqlalchemy.url", settings.db.get_url())
 target_metadata = Base.metadata
 
 # Dynamic model import
-for loader, module_name, is_pkg in pkgutil.iter_modules(models.__path__):
-    importlib.import_module(f"models.{module_name}")
+load_modules(models)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

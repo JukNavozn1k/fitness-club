@@ -4,6 +4,7 @@ from sqlalchemy import inspect
 from sqlalchemy.orm import class_mapper
 from typing import List, Dict, Optional, Any
 
+
 class AbstractRepository(ABC):
     @abstractmethod
     async def create(self, data: Dict) -> Dict:
@@ -38,28 +39,23 @@ class AbstractSQLRepository(AbstractRepository, ABC):
     def _to_dict(self, instance, visited=None):
         if visited is None:
             visited = set()
-            
-        # Преобразуем колонки модели в словарь
+
         result = {
             column.key: getattr(instance, column.key)
             for column in class_mapper(instance.__class__).columns
         }
-        
-        # Получаем объект-инспектор для проверки состояния загрузки атрибутов
+
         state = inspect(instance)
-        
+
         for name, relation in class_mapper(instance.__class__).relationships.items():
             if relation not in visited:
                 visited.add(relation)
-                
-                # Если атрибут не загружен, он будет присутствовать в state.unloaded
+
                 if name in state.unloaded:
-                    # Возвращаем внешний ключ, если он определён
                     fk_value = getattr(instance, f"{name}_id", None)
                     if fk_value is not None:
                         result[f"{name}_id"] = fk_value
                 else:
-                    # Если атрибут загружен, обрабатываем его
                     related_obj = getattr(instance, name)
                     if related_obj is not None:
                         if relation.uselist:
@@ -70,7 +66,6 @@ class AbstractSQLRepository(AbstractRepository, ABC):
                             result[name] = self._to_dict(related_obj, visited)
         return result
 
-    
     async def create(self, data: Dict) -> Dict:
         async with self.get_session() as session:
             instance = self.model(**data)
