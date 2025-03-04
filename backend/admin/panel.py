@@ -1,7 +1,7 @@
 from sqladmin import Admin as SQLAdmin, ModelView
 from sqlalchemy import inspect
 
-from core.database import db, Base
+from backend.models.database import db, Base
 from admin.auth import admin_auth
 from utils.modules import load_modules
 
