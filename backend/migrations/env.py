@@ -8,12 +8,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from core.config import settings
-from core.database import Base
 
-from utils.modules import load_modules
+from models import *
+from models.database import Base
 
-
-import models  # Импортируем пакет models, чтобы получить его __path__
 
 
 
@@ -35,8 +33,6 @@ config.set_main_option("sqlalchemy.url", settings.db.get_url())
 
 target_metadata = Base.metadata
 
-# Dynamic model import
-load_modules(models)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

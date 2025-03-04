@@ -1,15 +1,15 @@
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
-import models
+# import models
 
 from api import router as api_router
 
 from core.config import settings
-from admin import admin
+# from admin import admin
 
 app = FastAPI(title=settings.app.title, version=settings.app.version)
 app.include_router(api_router, default_response_class=ORJSONResponse)
 
-admin.init_app(app)
-admin.auto_register_all_models(models)
+# admin.init_app(app)
+# admin.auto_register_all_models(models)

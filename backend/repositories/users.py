@@ -1,6 +1,6 @@
 from repositories.base import AbstractSQLRepository
 from models.users import User
-from core.database import db
+from models.database import db
 
 
 class UserSQLRepository(AbstractSQLRepository):
