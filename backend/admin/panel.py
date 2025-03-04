@@ -1,11 +1,12 @@
-import pkgutil
-import importlib
+
 from sqladmin import Admin as SQLAdmin, ModelView  # Импортируем ModelView напрямую
 from sqlalchemy import inspect
 
 from core.database import db, Base  # Используем Base из core/database.py
 
 from admin.auth import admin_auth
+
+from utils.modules import load_modules
 
 class Admin:
     def __init__(self, db, app, auth):
@@ -35,11 +36,12 @@ class Admin:
         self.admin.add_view(DynamicModelView)
     
     def auto_register_all_models(self, models_module):
-        """Автоматическая регистрация всех моделей из модуля models."""
-        for loader, module_name, is_pkg in pkgutil.iter_modules(models_module.__path__):
-            print(f"Loading module: {module_name}")
-            module = importlib.import_module(f"models.{module_name}")
-            # Регистрируем все классы, которые являются моделями (наследуют от Base)
+        """
+        Автоматическая регистрация всех моделей из модуля models.
+        Здесь используется общая утилита для загрузки модулей.
+        """
+        modules = load_modules(models_module)
+        for module in modules:
             for attr_name in dir(module):
                 attr = getattr(module, attr_name)
                 if isinstance(attr, type) and issubclass(attr, Base) and attr is not Base:
