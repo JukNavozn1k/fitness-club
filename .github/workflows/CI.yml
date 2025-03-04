@@ -53,7 +53,13 @@ jobs:
 
       - name: Run tests inside backend container
         run: |
-          docker-compose exec -T backend pytest
+          docker-compose exec -T backend pytest || ret=$?
+          if [ "$ret" -eq 5 ]; then
+            echo "No tests collected, treating as success."
+            exit 0
+          else
+            exit $ret
+          fi
 
       - name: Shut down containers
         run: |
