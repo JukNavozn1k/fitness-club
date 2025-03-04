@@ -1,1 +1,4 @@
-from admin.panel import admin
+from .panel import panel
+
+
+

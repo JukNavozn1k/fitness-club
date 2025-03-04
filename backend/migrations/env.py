@@ -10,9 +10,6 @@ from alembic import context
 from core.config import settings
 
 from models import *
-from models.database import Base
-
-
 
 
 # this is the Alembic Config object, which provides
