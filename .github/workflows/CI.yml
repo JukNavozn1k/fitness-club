@@ -20,31 +20,29 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
-
-      - name: Build and start Docker Compose services with environment variables
+      - name: Create .env file from environment variables
         run: |
-          DB_NAME=gg \
-          DB_USER=gleb \
-          DB_PASS=1234 \
-          DB_HOST=db \
-          DB_PORT=5432 \
-          TEST_DB_NAME=gg_test \
-          TEST_DB_USER=gleb_test \
-          TEST_DB_PASS=1234 \
-          TEST_DB_HOST=db_test \
-          TEST_DB_PORT=5430 \
-          docker-compose -f docker-compose.yml up -d
-
+          echo "DB_NAME=gg" > .env
+          echo "DB_USER=gleb" >> .env
+          echo "DB_PASS=1234" >> .env
+          echo "DB_HOST=db" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "TEST_DB_NAME=gg_test" >> .env
+          echo "TEST_DB_USER=gleb_test" >> .env
+          echo "TEST_DB_PASS=1234" >> .env
+          echo "TEST_DB_HOST=db_test" >> .env
+          echo "TEST_DB_PORT=5430" >> .env
+      - name: Build and start Docker Compose services
+        run: |
+          docker-compose -f docker-compose.yml --env-file .env up -d
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for backend to be ready..."
           sleep 10
           curl --retry 10 --retry-delay 5 --max-time 30 http://localhost:8000
-
       - name: Run tests
         run: |
           docker-compose exec backend pytest
-
       - name: Shut down containers
         run: |
           docker-compose down -v
