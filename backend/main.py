@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
@@ -12,5 +11,5 @@ from admin import admin
 app = FastAPI(title=settings.app.title, version=settings.app.version)
 app.include_router(api_router, default_response_class=ORJSONResponse)
 
-admin.update_app(app)
+admin.init_app(app)
 admin.auto_register_all_models(models)
