@@ -5,6 +5,7 @@ from core.database import db, Base
 from admin.auth import admin_auth
 from utils.modules import load_modules
 
+
 class Admin:
     def __init__(self, db, auth):
         self.db = db
@@ -17,6 +18,7 @@ class Admin:
     def register_model(self, model):
         class DynamicModelView(ModelView, model=model):
             column_list = [column.name for column in inspect(model).columns]
+
         self.admin.add_view(DynamicModelView)
 
     def auto_register_all_models(self, models_module):
@@ -26,5 +28,6 @@ class Admin:
                 attr = getattr(module, attr_name)
                 if isinstance(attr, type) and issubclass(attr, Base) and attr is not Base:
                     self.register_model(attr)
+
 
 admin = Admin(db, admin_auth)
