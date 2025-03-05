@@ -1,7 +1,6 @@
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
-from core.config import settings
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
@@ -23,4 +22,5 @@ class AdminAuth(AuthenticationBackend):
         return request.session.get("authenticated", False)
 
 
-admin_auth = AdminAuth(settings.auth.secret_key)
+
+

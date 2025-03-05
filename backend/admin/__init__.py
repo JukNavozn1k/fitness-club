@@ -1,1 +1,5 @@
-from admin.panel import admin
+from .panel import AdminPanel
+from .auth import AdminAuth
+
+
+

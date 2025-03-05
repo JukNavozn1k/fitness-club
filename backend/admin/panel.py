@@ -1,15 +1,12 @@
 from sqladmin import Admin as SQLAdmin, ModelView
 from sqlalchemy import inspect
+import sys
 
-from core.database import db, Base
-from admin.auth import admin_auth
-from utils.modules import load_modules
-
-
-class Admin:
-    def __init__(self, db, auth):
-        self.db = db
-        self.auth = auth
+class AdminPanel:
+    def __init__(self,models_module):
+        self.models_module = models_module
+        self.db = models_module.db
+        self.auth = None
         self.admin = None
 
     def init_app(self, app):
@@ -21,13 +18,11 @@ class Admin:
 
         self.admin.add_view(DynamicModelView)
 
-    def auto_register_all_models(self, models_module):
-        modules = load_modules(models_module)
-        for module in modules:
-            for attr_name in dir(module):
-                attr = getattr(module, attr_name)
-                if isinstance(attr, type) and issubclass(attr, Base) and attr is not Base:
-                    self.register_model(attr)
+    def auto_register_all_models(self):
+        for module_name, module in sys.modules.items():
+            if module_name.startswith(self.models_module.__name__ + "."):
+                for attr_name in dir(module):
+                    attr = getattr(module, attr_name)
+                    if isinstance(attr, type) and issubclass(attr, self.models_module.Base) and attr is not self.models_module.Base:
+                        self.register_model(attr)
 
-
-admin = Admin(db, admin_auth)

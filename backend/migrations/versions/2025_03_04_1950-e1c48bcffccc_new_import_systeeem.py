@@ -1,8 +1,8 @@
-"""refactored imports
+"""new IMPORT SYSTEEEM
 
-Revision ID: dc4915a522c1
+Revision ID: e1c48bcffccc
 Revises: 
-Create Date: 2025-03-04 06:30:39.815558
+Create Date: 2025-03-04 19:50:00.503554
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'dc4915a522c1'
+revision: str = 'e1c48bcffccc'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
