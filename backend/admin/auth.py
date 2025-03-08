@@ -23,7 +23,6 @@ class AdminAuth(AuthenticationBackend):
     async def authenticate(self, request: Request) -> bool:
         try: 
             token = request.session.get("Authorization")
-            print(token)
             user_service.auth_service.parse_token(token)
             return True
         except Exception as e:
