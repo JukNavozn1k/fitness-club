@@ -27,18 +27,15 @@ services:
     command: >
       sh -c "uvicorn main:app --reload --host 0.0.0.0"
 
-
   frontend:
     build:
-      context: ./frontend/.
+      context: ./frontend   
     volumes:
       - ./frontend:/frontend
-      # Отдельный volume для node_modules, чтобы зависимости не перезаписывались при монтировании
       - /frontend/node_modules
     ports:
       - "5173:5173"
-    command: >
-      npm run dev 
+    command: npm run dev
 
 
   db:
