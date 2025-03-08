@@ -7,13 +7,14 @@ from contextlib import asynccontextmanager
 from api import router as api_router
 
 from core.config import settings
-from admin import AdminPanel
+from admin import AdminPanel,AdminAuth
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import models
-    admin_panel = AdminPanel(models)
+    
+    admin_panel = AdminPanel(models,auth=AdminAuth(settings.auth.secret_key))
     admin_panel.init_app(app)
     admin_panel.auto_register_all_models()
     yield

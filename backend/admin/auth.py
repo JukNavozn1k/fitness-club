@@ -1,25 +1,33 @@
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
+from schemas.auth import AuthSchema
+from services.users import user_service
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
-        form = await request.form()
-        username = form.get("username")
-        password = form.get("password")
-
-        # Здесь можно добавить проверку по БД или другому источнику
-        if username == "admin" and password == "secret":
-            request.session.update({"authenticated": True})
-            return True
-        return False
+        try:
+            form = await request.form()     
+            validated_form = AuthSchema(**form)
+            token = await user_service.login(validated_form.model_dump())
+            if token:
+                request.session.update({"Authorization": f'Bearer {token["token"]}'})
+                return True
+            return False
+        except: return False
 
     async def logout(self, request: Request) -> bool:
         request.session.clear()
         return True
 
     async def authenticate(self, request: Request) -> bool:
-        return request.session.get("authenticated", False)
+        try: 
+            token = request.session.get("Authorization")
+            print(token)
+            user_service.auth_service.parse_token(token)
+            return True
+        except Exception as e:
+            return False 
 
 
 
