@@ -32,10 +32,10 @@ services:
       context: ./frontend   
     volumes:
       - ./frontend:/frontend
-      - /frontend/node_modules
+      - node_modules:/frontend/node_modules
     ports:
       - "5173:5173"
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev 
 
 
   db:
@@ -69,3 +69,4 @@ services:
 
 volumes:
   postgres_data:
+  node_modules:
