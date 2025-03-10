@@ -3,10 +3,10 @@ from sqlalchemy import inspect
 import sys
 
 class AdminPanel:
-    def __init__(self,models_module):
+    def __init__(self,models_module,auth):
         self.models_module = models_module
         self.db = models_module.db
-        self.auth = None
+        self.auth = auth
         self.admin = None
 
     def init_app(self, app):
