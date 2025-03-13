@@ -12,4 +12,4 @@ class UserOut(UserBase):
     roles: List['RoleOut'] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True

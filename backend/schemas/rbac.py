@@ -11,7 +11,7 @@ class PermissionOut(PermissionBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Схемы для Role
 class RoleBase(BaseModel):
@@ -25,4 +25,4 @@ class RoleOut(RoleBase):
     permissions: List[PermissionOut] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
