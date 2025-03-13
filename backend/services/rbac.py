@@ -13,25 +13,25 @@ class RolePermissionService:
         self.permission_repo = permission_repo
         self.role_permission_repo = role_permission_repo
 
-    async def create_role(self, name: str) -> dict:
-        return await self.role_repo.create({"name": name})
+    async def create_role(self, data: dict) -> dict:
+        return await self.role_repo.create(data)
 
-    async def delete_role(self, role_id: int) -> bool:
-        return await self.role_repo.delete(role_id)
+    async def delete_role(self, data: dict) -> bool:
+        return await self.role_repo.delete(data['id'])
 
-    async def create_permission(self, name: str) -> dict:
-        return await self.permission_repo.create({"name": name})
+    async def create_permission(self, data: dict) -> dict:
+        return await self.permission_repo.create(data)
 
-    async def delete_permission(self, permission_id: int) -> bool:
-        return await self.permission_repo.delete(permission_id)
+    async def delete_permission(self, data: dict) -> bool:
+        return await self.permission_repo.delete(data['id'])
 
-    async def assign_permission_to_role(self, role_id: int, permission_id: int) -> dict:
-        return await self.role_permission_repo.create({"role_id": role_id, "permission_id": permission_id})
+    async def assign_permission_to_role(self, data: dict) -> dict:
+        return await self.role_permission_repo.create(data)
 
-    async def remove_permission_from_role(self, role_id: int, permission_id: int) -> bool:
+    async def remove_permission_from_role(self, data: dict) -> bool:
         role_permission = await self.role_permission_repo.retrieve_by_filter({
-            "role_id": role_id,
-            "permission_id": permission_id
+            "role_id": data['role_id'],
+            "permission_id": data['permission_id']
         })
         if role_permission:
             return await self.role_permission_repo.delete(role_permission[0]["id"])
@@ -48,20 +48,20 @@ class UserRoleService:
     def __init__(self, user_role_repo):
         self.user_role_repo = user_role_repo
 
-    async def assign_role_to_user(self, user_id: int, role_id: int) -> dict:
-        return await self.user_role_repo.create({"user_id": user_id, "role_id": role_id})
+    async def assign_role_to_user(self, data: dict) -> dict:
+        return await self.user_role_repo.create(data)
 
-    async def remove_role_from_user(self, user_id: int, role_id: int) -> bool:
+    async def remove_role_from_user(self, data: dict) -> bool:
         user_role = await self.user_role_repo.retrieve_by_filter({
-            "user_id": user_id,
-            "role_id": role_id
+            "user_id": data['user_id'],
+            "role_id": data['role_id']
         })
         if user_role:
             return await self.user_role_repo.delete(user_role[0]["id"])
         return False
 
-    async def list_user_roles(self, user_id: int) -> List[dict]:
-        return await self.user_role_repo.retrieve_by_filter({"user_id": user_id})
+    async def list_user_roles(self, data: dict) -> List[dict]:
+        return await self.user_role_repo.retrieve_by_filter({"user_id": data['user_id']})
 
 
 # Инициализация сервисов
