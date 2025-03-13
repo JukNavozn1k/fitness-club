@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Header
 
 from schemas.auth import AuthSchema, TokenSchema, TokenVerifySchema
-from schemas.users import UserBase
+from schemas.users import UserOut
 
 from services.users import user_service
 from services.auth import auth_service
@@ -20,7 +20,7 @@ async def login(schema: AuthSchema):
     return token
 
 
-@router.post('/register', response_model=UserBase)
+@router.post('/register', response_model=UserOut)
 async def register(schema: AuthSchema):
     try:
         user = await user_service.register(schema.model_dump())
@@ -39,7 +39,7 @@ async def verify_token(token: str = Header()):
         return {'valid': False}
 
 
-@router.get('/me', response_model=UserBase)
+@router.get('/me', response_model=UserOut)
 async def me(token: str = Header()):
     try:
         return await user_service.retrieve_by_token(token)

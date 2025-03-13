@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List
 
+from .rbac import RoleOut
+
 # Схемы для User
 class UserBase(BaseModel):
     username: str
