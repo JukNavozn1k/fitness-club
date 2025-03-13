@@ -1,55 +1,83 @@
 
-from typing import List, Dict, Optional
-from models.rbac import Role, Permission, RolePermission
-from repositories import sql_role_repository, sql_permission_repository, sql_role_permission_repository
 
-class RolePermissionService:
-    async def create_role(self, role_data: Dict) -> Dict:
-        return await sql_role_repository.create(role_data)
+from typing import Dict, List, Optional
 
-    async def get_role(self, role_id: int) -> Optional[Dict]:
-        return await sql_role_repository.retrieve(role_id)
+class UserRoleService:
+    def __init__(self, user_repo, role_repo, user_role_repo):
+        self.user_repo = user_repo
+        self.role_repo = role_repo
+        self.user_role_repo = user_role_repo
 
-    async def list_roles(self) -> List[Dict]:
-        return await sql_role_repository.list()
+    async def get_user(self, user_id: int) -> Optional[Dict]:
+        return await self.user_repo.retrieve(user_id)
 
-    async def update_role(self, role_id: int, role_data: Dict) -> Optional[Dict]:
-        return await sql_role_repository.update(role_id, role_data)
-
-    async def delete_role(self, role_id: int) -> bool:
-        return await sql_role_repository.delete(role_id)
-
-    async def create_permission(self, permission_data: Dict) -> Dict:
-        return await sql_permission_repository.create(permission_data)
-
-    async def get_permission(self, permission_id: int) -> Optional[Dict]:
-        return await sql_permission_repository.retrieve(permission_id)
-
-    async def list_permissions(self) -> List[Dict]:
-        return await sql_permission_repository.list()
-
-    async def assign_permission_to_role(self, role_id: int, permission_id: int) -> Dict:
-        # Проверка существования роли и разрешения
-        role = await sql_role_repository.retrieve(role_id)
-        permission = await sql_permission_repository.retrieve(permission_id)
-        
-        if role and permission:
-            role_permission_data = {
-                'role_id': role_id,
-                'permission_id': permission_id
+    async def assign_role_to_user(self, user_id: int, role_id: int) -> Dict:
+        # Проверяем наличие пользователя и роли
+        user = await self.user_repo.retrieve(user_id)
+        role = await self.role_repo.retrieve(role_id)
+        if user and role:
+            association_data = {
+                'user_id': user_id,
+                'role_id': role_id
             }
-            return await sql_role_permission_repository.create(role_permission_data)
+            return await self.user_role_repo.create(association_data)
         return {}
 
-    async def remove_permission_from_role(self, role_id: int, permission_id: int) -> bool:
-        # Удаление связи роли и разрешения
-        async with sql_role_permission_repository.get_session() as session:
-            result = await session.execute(
-                select(RolePermission).filter_by(role_id=role_id, permission_id=permission_id)
-            )
-            role_permission = result.scalar_one_or_none()
-            if role_permission:
-                await session.delete(role_permission)
-                await session.commit()
-                return True
+    async def remove_role_from_user(self, user_id: int, role_id: int) -> bool:
+        associations = await self.user_role_repo.list()
+        target = next(
+            (assoc for assoc in associations
+             if assoc.get('user_id') == user_id and assoc.get('role_id') == role_id),
+            None
+        )
+        if target:
+            return await self.user_role_repo.delete(target.get('id'))
         return False
+
+    async def get_user_roles(self, user_id: int) -> List[Dict]:
+        associations = await self.user_role_repo.list()
+        # Фильтруем роли, назначенные конкретному пользователю
+        return [assoc for assoc in associations if assoc.get('user_id') == user_id]
+
+    async def list_user_roles(self) -> List[Dict]:
+        return await self.user_role_repo.list()
+
+class UserRoleService:
+    def __init__(self, user_repo, role_repo, user_role_repo):
+        self.user_repo = user_repo
+        self.role_repo = role_repo
+        self.user_role_repo = user_role_repo
+
+    async def get_user(self, user_id: int) -> Optional[Dict]:
+        return await self.user_repo.retrieve(user_id)
+
+    async def assign_role_to_user(self, user_id: int, role_id: int) -> Dict:
+        # Проверяем наличие пользователя и роли
+        user = await self.user_repo.retrieve(user_id)
+        role = await self.role_repo.retrieve(role_id)
+        if user and role:
+            association_data = {
+                'user_id': user_id,
+                'role_id': role_id
+            }
+            return await self.user_role_repo.create(association_data)
+        return {}
+
+    async def remove_role_from_user(self, user_id: int, role_id: int) -> bool:
+        associations = await self.user_role_repo.list()
+        target = next(
+            (assoc for assoc in associations
+             if assoc.get('user_id') == user_id and assoc.get('role_id') == role_id),
+            None
+        )
+        if target:
+            return await self.user_role_repo.delete(target.get('id'))
+        return False
+
+    async def get_user_roles(self, user_id: int) -> List[Dict]:
+        associations = await self.user_role_repo.list()
+        # Фильтруем роли, назначенные конкретному пользователю
+        return [assoc for assoc in associations if assoc.get('user_id') == user_id]
+
+    async def list_user_roles(self) -> List[Dict]:
+        return await self.user_role_repo.list()
