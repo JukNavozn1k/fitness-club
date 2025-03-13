@@ -11,6 +11,10 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
+        raise NotImplementedError
+
+    @abstractmethod
     async def retrieve(self, pk: int) -> Optional[Dict]:
         raise NotImplementedError
 
@@ -28,6 +32,10 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     async def delete(self, pk: int) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_many(self, ids: List[int]) -> bool:
         raise NotImplementedError
 
 
@@ -73,6 +81,13 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             await session.commit()
             return self._to_dict(instance)
 
+    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
+        async with self.get_session() as session:
+            instances = [self.model(**data) for data in data_list]
+            session.add_all(instances)
+            await session.commit()
+            return [self._to_dict(instance) for instance in instances]
+
     async def retrieve(self, pk: int) -> Optional[Dict]:
         async with self.get_session() as session:
             result = await session.execute(select(self.model).filter_by(id=pk))
@@ -108,6 +123,17 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             instance = result.scalar_one_or_none()
             if instance:
                 await session.delete(instance)
+                await session.commit()
+                return True
+            return False
+
+    async def delete_many(self, ids: List[int]) -> bool:
+        async with self.get_session() as session:
+            result = await session.execute(select(self.model).filter(self.model.id.in_(ids)))
+            instances = result.scalars().all()
+            if instances:
+                for instance in instances:
+                    await session.delete(instance)
                 await session.commit()
                 return True
             return False
