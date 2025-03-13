@@ -4,7 +4,7 @@ from repositories.rbac import (
     sql_role_permission_repository,
     sql_user_role_repository
 )
-from typing import List, Optional
+from typing import List
 
 
 class RolePermissionService:
