@@ -15,6 +15,9 @@ class Role(Base):
     @property
     def permissions(self) -> list["Permission"]:
         return [rp.permission for rp in self.role_permissions]
+    
+    def __str__(self):
+        return self.name
 
 class Permission(Base):
     __tablename__ = 'permissions'
@@ -27,6 +30,9 @@ class Permission(Base):
     @property
     def roles(self) -> list["Role"]:
         return [rp.role for rp in self.role_permissions]
+    
+    def __str__(self):
+        return self.name
 
 # Ассоциация User <-> Role
 class UserRole(Base):

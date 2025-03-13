@@ -16,3 +16,6 @@ class User(Base):
     @property
     def roles(self) -> list["Role"]:
         return [ur.role for ur in self.user_roles]
+
+    def __str__(self):
+        return f'{self.username}'
