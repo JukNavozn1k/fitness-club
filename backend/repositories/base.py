@@ -23,6 +23,10 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def retrieve_by_filter(self, filters: Dict[str, Any]) -> List[Dict]:
+        raise NotImplementedError
+
+    @abstractmethod
     async def list(self) -> List[Dict]:
         raise NotImplementedError
 
@@ -100,6 +104,12 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             result = await session.execute(query)
             instance = result.scalar_one_or_none()
             return self._to_dict(instance) if instance else None
+
+    async def retrieve_by_filter(self, filters: Dict[str, Any]) -> List[Dict]:
+        async with self.get_session() as session:
+            query = select(self.model).filter_by(**filters)
+            result = await session.execute(query)
+            return [self._to_dict(instance) for instance in result.scalars().all()]
 
     async def list(self) -> List[Dict]:
         async with self.get_session() as session:
