@@ -147,3 +147,45 @@ class AbstractSQLRepository(AbstractRepository, ABC):
                 await session.commit()
                 return True
             return False
+        
+    async def get_attribute(self, pk: int, attr_name: str) -> Any:
+        """Получает значение атрибута модели, включая отношения."""
+        async with self.get_session() as session:
+            result = await session.execute(select(self.model).filter_by(id=pk))
+            instance = result.scalar_one_or_none()
+            if not instance:
+                return None
+
+            attr_value = getattr(instance, attr_name, None)
+            if isinstance(attr_value, list):  # Если это список объектов
+                return [self._to_dict(obj) for obj in attr_value]
+            return attr_value  # Возвращаем обычное значение
+
+    async def set_attribute(self, pk: int, attr_name: str, value: Any) -> Optional[Dict]:
+        """Устанавливает значение атрибута модели, включая отношения."""
+        async with self.get_session() as session:
+            result = await session.execute(select(self.model).filter_by(id=pk))
+            instance = result.scalar_one_or_none()
+            if not instance:
+                return None
+
+            if attr_name in class_mapper(self.model).relationships:
+                # Обновление отношения (если передан список ID)
+                relation = class_mapper(self.model).relationships[attr_name]
+                related_model = relation.mapper.class_
+
+                # Удаляем старые связи
+                current_relations = getattr(instance, attr_name)
+                for rel_obj in current_relations:
+                    await session.delete(rel_obj)
+
+                # Добавляем новые связи
+                new_objects = await session.execute(select(related_model).filter(related_model.id.in_(value)))
+                new_objects = new_objects.scalars().all()
+                setattr(instance, attr_name, new_objects)
+
+            else:
+                setattr(instance, attr_name, value)
+
+            await session.commit()
+            return self._to_dict(instance)
