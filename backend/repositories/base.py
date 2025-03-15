@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from sqlalchemy.future import select
 from sqlalchemy import inspect
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper,Load
 from typing import List, Dict, Optional, Any
 
 
@@ -92,28 +92,38 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             await session.commit()
             return [self._to_dict(instance) for instance in instances]
 
-    async def retrieve(self, pk: int) -> Optional[Dict]:
+    async def retrieve(self, pk: int, options: Optional[List[Load]] = None) -> Optional[Dict]:
         async with self.get_session() as session:
-            result = await session.execute(select(self.model).filter_by(id=pk))
-            instance = result.scalar_one_or_none()
-            return self._to_dict(instance) if instance else None
-
-    async def retrieve_by_field(self, field_name: str, value: Any) -> Optional[Dict]:
-        async with self.get_session() as session:
-            query = select(self.model).filter(getattr(self.model, field_name) == value)
+            query = select(self.model).filter_by(id=pk)
+            if options:
+                query = query.options(*options)
             result = await session.execute(query)
             instance = result.scalar_one_or_none()
             return self._to_dict(instance) if instance else None
 
-    async def retrieve_by_filter(self, filters: Dict[str, Any]) -> List[Dict]:
+    async def retrieve_by_field(self, field_name: str, value: Any, options: Optional[List[Load]] = None) -> Optional[Dict]:
+        async with self.get_session() as session:
+            query = select(self.model).filter(getattr(self.model, field_name) == value)
+            if options:
+                query = query.options(*options)
+            result = await session.execute(query)
+            instance = result.scalar_one_or_none()
+            return self._to_dict(instance) if instance else None
+
+    async def retrieve_by_filter(self, filters: Dict[str, Any], options: Optional[List[Load]] = None) -> List[Dict]:
         async with self.get_session() as session:
             query = select(self.model).filter_by(**filters)
+            if options:
+                query = query.options(*options)
             result = await session.execute(query)
             return [self._to_dict(instance) for instance in result.scalars().all()]
 
-    async def list(self) -> List[Dict]:
+    async def list(self, options: Optional[List[Load]] = None) -> List[Dict]:
         async with self.get_session() as session:
-            result = await session.execute(select(self.model))
+            query = select(self.model)
+            if options:
+                query = query.options(*options)
+            result = await session.execute(query)
             return [self._to_dict(instance) for instance in result.scalars().all()]
 
     async def update(self, pk: int, data: Dict) -> Optional[Dict]:
