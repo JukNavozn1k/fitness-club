@@ -1,17 +1,12 @@
 from abc import ABC, abstractmethod
 from sqlalchemy.future import select
 from sqlalchemy import inspect
-from sqlalchemy.orm import class_mapper,Load
+from sqlalchemy.orm import class_mapper,Load,RelationshipProperty
 from typing import List, Dict, Optional, Any
-
 
 class AbstractRepository(ABC):
     @abstractmethod
     async def create(self, data: Dict) -> Dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
         raise NotImplementedError
 
     @abstractmethod
@@ -33,11 +28,6 @@ class AbstractRepository(ABC):
     @abstractmethod
     async def delete(self, pk: int) -> bool:
         raise NotImplementedError
-
-    @abstractmethod
-    async def delete_many(self, ids: List[int]) -> bool:
-        raise NotImplementedError
-
 
 class AbstractSQLRepository(AbstractRepository, ABC):
     def __init__(self, get_session, model):
@@ -75,18 +65,25 @@ class AbstractSQLRepository(AbstractRepository, ABC):
         return result
 
     async def create(self, data: Dict) -> Dict:
-        async with self.get_session() as session:
-            instance = self.model(**data)
+        async with self.get_session() as session: 
+            instance = self.model(**{k: v for k, v in data.items() if not isinstance(v, (dict, list))})
+
+            for field, value in data.items():
+                if hasattr(self.model, field) and isinstance(getattr(self.model, field).property, RelationshipProperty):
+                    related_model = getattr(self.model, field).property.mapper.class_
+
+                    if isinstance(value, list):  # Если это список объектов
+                        related_instances = [related_model(**item) for item in value]
+                        setattr(instance, field, related_instances)
+                    else:  # Если это одиночный объект
+                        related_instance = related_model(**value)
+                        setattr(instance, field, related_instance)
+
             session.add(instance)
             await session.commit()
-            return self._to_dict(instance)
+            await session.refresh(instance)  # Обновляем объект, чтобы получить связанные данные
 
-    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
-        async with self.get_session() as session:
-            instances = [self.model(**data) for data in data_list]
-            session.add_all(instances)
-            await session.commit()
-            return [self._to_dict(instance) for instance in instances]
+            return self._to_dict(instance)
         
     async def retrieve_by_field(self, field_name: str, value: Any, options: Optional[List[Load]] = None, filters: Optional[Dict[str, Any]] = None) -> Optional[Dict]:
         async with self.get_session() as session:
@@ -118,10 +115,24 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             instance = result.scalar_one_or_none()
             if instance:
                 for key, value in data.items():
-                    setattr(instance, key, value)
+                    # Если поле - отношение (relationship), то нужно обработать его отдельно
+                    if hasattr(self.model, key) and isinstance(getattr(self.model, key).property, RelationshipProperty):
+                        related_model = getattr(self.model, key).property.mapper.class_
+
+                        if isinstance(value, list):  # Если это список объектов
+                            related_instances = [related_model(**item) for item in value]
+                            setattr(instance, key, related_instances)
+                        else:  # Если это одиночный объект
+                            related_instance = related_model(**value)
+                            setattr(instance, key, related_instance)
+                    else:
+                        setattr(instance, key, value)
+
                 await session.commit()
+                await session.refresh(instance)  # Обновляем объект, чтобы получить новые связи
                 return self._to_dict(instance)
             return None
+
 
     async def delete(self, pk: int) -> bool:
         async with self.get_session() as session:
@@ -133,55 +144,4 @@ class AbstractSQLRepository(AbstractRepository, ABC):
                 return True
             return False
 
-    async def delete_many(self, ids: List[int]) -> bool:
-        async with self.get_session() as session:
-            result = await session.execute(select(self.model).filter(self.model.id.in_(ids)))
-            instances = result.scalars().all()
-            if instances:
-                for instance in instances:
-                    await session.delete(instance)
-                await session.commit()
-                return True
-            return False
-        
-    async def get_attribute(self, pk: int, attr_name: str) -> Any:
-        """Получает значение атрибута модели, включая отношения."""
-        async with self.get_session() as session:
-            result = await session.execute(select(self.model).filter_by(id=pk))
-            instance = result.scalar_one_or_none()
-            if not instance:
-                return None
-
-            attr_value = getattr(instance, attr_name, None)
-            if isinstance(attr_value, list):  # Если это список объектов
-                return [self._to_dict(obj) for obj in attr_value]
-            return attr_value  # Возвращаем обычное значение
-
-    async def set_attribute(self, pk: int, attr_name: str, value: Any) -> Optional[Dict]:
-        """Устанавливает значение атрибута модели, включая отношения."""
-        async with self.get_session() as session:
-            result = await session.execute(select(self.model).filter_by(id=pk))
-            instance = result.scalar_one_or_none()
-            if not instance:
-                return None
-
-            if attr_name in class_mapper(self.model).relationships:
-                # Обновление отношения (если передан список ID)
-                relation = class_mapper(self.model).relationships[attr_name]
-                related_model = relation.mapper.class_
-
-                # Удаляем старые связи
-                current_relations = getattr(instance, attr_name)
-                for rel_obj in current_relations:
-                    await session.delete(rel_obj)
-
-                # Добавляем новые связи
-                new_objects = await session.execute(select(related_model).filter(related_model.id.in_(value)))
-                new_objects = new_objects.scalars().all()
-                setattr(instance, attr_name, new_objects)
-
-            else:
-                setattr(instance, attr_name, value)
-
-            await session.commit()
-            return self._to_dict(instance)
+ 
