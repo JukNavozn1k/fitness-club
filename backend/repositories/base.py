@@ -1,17 +1,12 @@
 from abc import ABC, abstractmethod
 from sqlalchemy.future import select
 from sqlalchemy import inspect
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper,Load,RelationshipProperty
 from typing import List, Dict, Optional, Any
-
 
 class AbstractRepository(ABC):
     @abstractmethod
     async def create(self, data: Dict) -> Dict:
-        raise NotImplementedError
-
-    @abstractmethod
-    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
         raise NotImplementedError
 
     @abstractmethod
@@ -20,10 +15,6 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     async def retrieve_by_field(self, field_name: str, value: Any) -> Optional[Dict]:
-        raise NotImplementedError
-
-    @abstractmethod
-    async def retrieve_by_filter(self, filters: Dict[str, Any]) -> List[Dict]:
         raise NotImplementedError
 
     @abstractmethod
@@ -37,11 +28,6 @@ class AbstractRepository(ABC):
     @abstractmethod
     async def delete(self, pk: int) -> bool:
         raise NotImplementedError
-
-    @abstractmethod
-    async def delete_many(self, ids: List[int]) -> bool:
-        raise NotImplementedError
-
 
 class AbstractSQLRepository(AbstractRepository, ABC):
     def __init__(self, get_session, model):
@@ -79,41 +65,48 @@ class AbstractSQLRepository(AbstractRepository, ABC):
         return result
 
     async def create(self, data: Dict) -> Dict:
-        async with self.get_session() as session:
-            instance = self.model(**data)
+        async with self.get_session() as session: 
+            instance = self.model(**{k: v for k, v in data.items() if not isinstance(v, (dict, list))})
+
+            for field, value in data.items():
+                if hasattr(self.model, field) and isinstance(getattr(self.model, field).property, RelationshipProperty):
+                    related_model = getattr(self.model, field).property.mapper.class_
+
+                    if isinstance(value, list):  # Если это список объектов
+                        related_instances = [related_model(**item) for item in value]
+                        setattr(instance, field, related_instances)
+                    else:  # Если это одиночный объект
+                        related_instance = related_model(**value)
+                        setattr(instance, field, related_instance)
+
             session.add(instance)
             await session.commit()
+            await session.refresh(instance)  # Обновляем объект, чтобы получить связанные данные
+
             return self._to_dict(instance)
-
-    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
-        async with self.get_session() as session:
-            instances = [self.model(**data) for data in data_list]
-            session.add_all(instances)
-            await session.commit()
-            return [self._to_dict(instance) for instance in instances]
-
-    async def retrieve(self, pk: int) -> Optional[Dict]:
-        async with self.get_session() as session:
-            result = await session.execute(select(self.model).filter_by(id=pk))
-            instance = result.scalar_one_or_none()
-            return self._to_dict(instance) if instance else None
-
-    async def retrieve_by_field(self, field_name: str, value: Any) -> Optional[Dict]:
+        
+    async def retrieve_by_field(self, field_name: str, value: Any, options: Optional[List[Load]] = None, filters: Optional[Dict[str, Any]] = None) -> Optional[Dict]:
         async with self.get_session() as session:
             query = select(self.model).filter(getattr(self.model, field_name) == value)
+            if filters: 
+                query = query.filter_by(**filters)
+            if options:
+                query = query.options(*options)
             result = await session.execute(query)
             instance = result.scalar_one_or_none()
             return self._to_dict(instance) if instance else None
+    
+    async def retrieve(self, pk: int, options: Optional[List[Load]] = None) -> Optional[Dict]:
+        return await self.retrieve_by_field("id", pk, options)
 
-    async def retrieve_by_filter(self, filters: Dict[str, Any]) -> List[Dict]:
+    async def list(self, options: Optional[List[Load]] = None, filters: Optional[Dict[str, Any]] = None) -> List[Dict]:
         async with self.get_session() as session:
-            query = select(self.model).filter_by(**filters)
+            query = select(self.model)
+            if filters:
+                query = query.filter_by(**filters)
+            if options:
+                query = query.options(*options)
             result = await session.execute(query)
-            return [self._to_dict(instance) for instance in result.scalars().all()]
-
-    async def list(self) -> List[Dict]:
-        async with self.get_session() as session:
-            result = await session.execute(select(self.model))
             return [self._to_dict(instance) for instance in result.scalars().all()]
 
     async def update(self, pk: int, data: Dict) -> Optional[Dict]:
@@ -122,10 +115,24 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             instance = result.scalar_one_or_none()
             if instance:
                 for key, value in data.items():
-                    setattr(instance, key, value)
+                    # Если поле - отношение (relationship), то нужно обработать его отдельно
+                    if hasattr(self.model, key) and isinstance(getattr(self.model, key).property, RelationshipProperty):
+                        related_model = getattr(self.model, key).property.mapper.class_
+
+                        if isinstance(value, list):  # Если это список объектов
+                            related_instances = [related_model(**item) for item in value]
+                            setattr(instance, key, related_instances)
+                        else:  # Если это одиночный объект
+                            related_instance = related_model(**value)
+                            setattr(instance, key, related_instance)
+                    else:
+                        setattr(instance, key, value)
+
                 await session.commit()
+                await session.refresh(instance)  # Обновляем объект, чтобы получить новые связи
                 return self._to_dict(instance)
             return None
+
 
     async def delete(self, pk: int) -> bool:
         async with self.get_session() as session:
@@ -137,13 +144,4 @@ class AbstractSQLRepository(AbstractRepository, ABC):
                 return True
             return False
 
-    async def delete_many(self, ids: List[int]) -> bool:
-        async with self.get_session() as session:
-            result = await session.execute(select(self.model).filter(self.model.id.in_(ids)))
-            instances = result.scalars().all()
-            if instances:
-                for instance in instances:
-                    await session.delete(instance)
-                await session.commit()
-                return True
-            return False
+ 
