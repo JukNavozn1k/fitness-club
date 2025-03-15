@@ -21,6 +21,8 @@ export default function LoginForm() {
   }
 
   return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-4">
+      <div className="w-full max-w-md">
     <Card className="w-full shadow-lg">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-center mb-2">
@@ -84,6 +86,8 @@ export default function LoginForm() {
         </div>
       </CardFooter>
     </Card>
+    </div>
+    </div>
   )
 }
 
