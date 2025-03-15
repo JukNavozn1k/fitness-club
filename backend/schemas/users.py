@@ -9,7 +9,7 @@ class UserBase(BaseModel):
 
 class UserOut(UserBase):
     id: int
-    user_roles: List['RoleOut'] = []
+    roles: List['RoleOut'] = []
 
     class Config:
         from_attributes = True

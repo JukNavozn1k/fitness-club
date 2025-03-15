@@ -12,4 +12,4 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(128), nullable=False)
     
     # Связь с ролями через ассоциативную таблицу
-    roles: Mapped[List["Role"]] = relationship("Role", secondary="user_roles", back_populates="users")
+    roles: Mapped[List["Role"]] = relationship("Role", secondary="user_roles", back_populates="users",lazy='selectin')
