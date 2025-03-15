@@ -9,13 +9,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(128), nullable=False)
     
-    # Связь с ассоциацией ролей
-    user_roles: Mapped[list['UserRole']] = relationship("UserRole", back_populates="user", cascade="all, delete-orphan")
-    
-    # Удобное получение ролей через ассоциацию
-    @property
-    def roles(self) -> list["Role"]:
-        return [ur.role for ur in self.user_roles]
+    # Прямая связь User -> Role через user_roles
+    roles: Mapped[list["Role"]] = relationship("Role", secondary=user_roles, back_populates="users", lazy='selectin')
 
     def __str__(self):
         return f'{self.username}'
