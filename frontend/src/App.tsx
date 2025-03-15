@@ -1,11 +1,9 @@
-import Home from './pages/home'
-
-import './App.css'
+import LoginForm from "./pages/login"
 
 function App() {
   return (
     <>
-      <Home/>
+      <LoginForm/>
     </>
   )
 }
