@@ -1,14 +1,13 @@
 import { Dumbbell, Users, Calendar, Award, MapPin, Phone, Mail, Clock } from "lucide-react"
-import Sidebar from "@/components/ui/Sidebar"
-import MobileNavbar from "@/components/ui/navbar"
+
 export default function Home() {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar for desktop */}
-      <Sidebar />
+      
 
       {/* Main content */}
-      <main className="flex-1 pb-16 md:pb-0 md:ml-[var(--sidebar-width,256px)] transition-all duration-200">
+      <main className="flex-1 pb-16 md:pb-0 ">
         {/* Hero Section */}
         <section className="relative h-[500px] w-full bg-cover bg-center" style={{ backgroundImage: "url('/placeholder.svg?height=500&width=1200')" }}>
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4 text-center">
@@ -251,8 +250,7 @@ export default function Home() {
         </footer>
       </main>
 
-      {/* Mobile Navigation */}
-      <MobileNavbar />
+      
     </div>
   )
 }
