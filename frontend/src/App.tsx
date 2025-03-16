@@ -9,7 +9,7 @@ function App() {
     <BrowserRouter>
     <Sidebar />
     <div className='md:ml-[var(--sidebar-width,256px)] transition-all duration-200'>
-      <Home />     
+      <Login />     
       </div>
       {/* Mobile Navigation */}
       <MobileNavbar />
