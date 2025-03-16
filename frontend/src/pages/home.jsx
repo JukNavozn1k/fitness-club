@@ -11,7 +11,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="relative h-[500px] w-full bg-cover bg-center" style={{ backgroundImage: "url('/placeholder.svg?height=500&width=1200')" }}>
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">POWER FITNESS</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">Фитнес клуб</h1>
             <p className="text-xl md:text-2xl mb-8">Трансформируйте свое тело. Измените свою жизнь.</p>
             <button className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg">
               Начать сейчас
@@ -215,7 +215,7 @@ export default function Home() {
           <div className="container mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <h3 className="text-xl font-bold mb-4">POWER FITNESS</h3>
+                <h3 className="text-xl font-bold mb-4">Фитнес клуб</h3>
                 <p className="mb-4">Ваш путь к идеальной форме начинается здесь.</p>
               </div>
               <div>
@@ -244,7 +244,7 @@ export default function Home() {
               </div>
             </div>
             <div className="border-t border-border mt-8 pt-8 text-center">
-              <p>&copy; {new Date().getFullYear()} POWER FITNESS. Все права защищены.</p>
+              <p>&copy; {new Date().getFullYear()} Фитнес клуб. Все права защищены.</p>
             </div>
           </div>
         </footer>

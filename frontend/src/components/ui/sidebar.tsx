@@ -63,9 +63,9 @@ export default function Sidebar() {
 
         <div className="flex items-center h-16 flex-shrink-0 px-4 justify-center">
           {showText ? (
-            <h1 className="text-xl font-bold truncate">POWER FITNESS</h1>
+            <h1 className="text-xl font-bold truncate">Фитнес клуб</h1>
           ) : (
-            <h1 className="text-xl font-bold">PF</h1>
+            <h1 className="text-xl font-bold">ФК</h1>
           )}
         </div>
 
