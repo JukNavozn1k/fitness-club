@@ -31,19 +31,13 @@ services:
       build: 
         context: ./frontend/.
       volumes:
-        - ./frontend/public:/frontend/public
         - ./frontend/src:/frontend/src
-        - ./frontend/package.json:/frontend/package.json
-        - ./frontend/package-lock.json:/frontend/package-lock.json
       depends_on:
         - backend
-      command: npm start
-      environment:
-        - WDS_SOCKET_HOST=127.0.0.1 
-        - CHOKIDAR_USEPOLLING=true
-        - WATCHPACK_POLLING=true 
+      command: npm run dev
+     
       ports:
-        - 3000:3000
+        - 5173:5173
 
 
 
