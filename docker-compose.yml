@@ -27,15 +27,24 @@ services:
     command: >
       sh -c "uvicorn main:app --reload --host 0.0.0.0"
 
-  # frontend:
-  #   build:
-  #     context: ./frontend   
-  #   volumes:
-  #     - ./frontend:/frontend
-  #     - node_modules:/frontend/node_modules
-  #   ports:
-  #     - "5173:5173"
-  #   command: npm run dev 
+  frontend:
+      build: 
+        context: ./frontend/.
+      volumes:
+        - ./frontend/public:/frontend/public
+        - ./frontend/src:/frontend/src
+        - ./frontend/package.json:/frontend/package.json
+        - ./frontend/package-lock.json:/frontend/package-lock.json
+      depends_on:
+        - backend
+      command: npm start
+      environment:
+        - WDS_SOCKET_HOST=127.0.0.1 
+        - CHOKIDAR_USEPOLLING=true
+        - WATCHPACK_POLLING=true 
+      ports:
+        - 3000:3000
+
 
 
   db:
