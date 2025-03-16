@@ -1,14 +1,14 @@
 import { BrowserRouter } from 'react-router-dom'
 
+import Login from './pages/login'
 
-import Home from './pages/Home'
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col">
-        <Home />     
-      </div>
+    
+        <Login />     
+     
     </BrowserRouter>
   )
 }
