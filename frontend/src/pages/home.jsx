@@ -1,15 +1,18 @@
-import { Dumbbell, Users, Calendar, Award, MapPin, Phone, Mail, Clock } from "lucide-react"
+import { Dumbbell, Users, Calendar, Award, MapPin, Phone, Mail, Clock, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function Home() {
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar for desktop */}
-      
-
       {/* Main content */}
-      <main className="flex-1 pb-16 md:pb-0 ">
+      <main className="flex-1 pb-16 md:pb-0">
         {/* Hero Section */}
-        <section className="relative h-[500px] w-full bg-cover bg-center" style={{ backgroundImage: "url('/placeholder.svg?height=500&width=1200')" }}>
+        <section className="relative h-[500px] w-full">
+          <img
+            src="/placeholder.svg?height=500&width=1200"
+            alt="Fitness Club"
+            className="object-cover h-full w-full"
+          />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Фитнес клуб</h1>
             <p className="text-xl md:text-2xl mb-8">Трансформируйте свое тело. Измените свою жизнь.</p>
@@ -96,6 +99,11 @@ export default function Home() {
               highlighted={false}
             />
           </div>
+
+          {/* Кнопка "Смотреть все" для абонементов */}
+          <div className="mt-12 text-center">
+            <ViewAllButton text="Смотреть все абонементы" href="#memberships" />
+          </div>
         </section>
 
         {/* Trainers Section */}
@@ -119,6 +127,11 @@ export default function Home() {
               specialty="Функциональный тренинг"
             />
           </div>
+
+          {/* Кнопка "Смотреть все" для тренеров */}
+          <div className="mt-12 text-center">
+            <ViewAllButton text="Познакомиться со всеми тренерами" href="#trainers" />
+          </div>
         </section>
 
         {/* Testimonials */}
@@ -140,6 +153,11 @@ export default function Home() {
               author="Анна С."
               role="Клиент с 2023 года"
             />
+          </div>
+
+          {/* Кнопка "Смотреть все" для отзывов */}
+          <div className="mt-12 text-center">
+            <ViewAllButton text="Читать все отзывы" href="#testimonials" />
           </div>
         </section>
 
@@ -249,9 +267,24 @@ export default function Home() {
           </div>
         </footer>
       </main>
-
-      
     </div>
+  )
+}
+
+// Компонент кнопки "Смотреть все"
+function ViewAllButton({ text, href }) {
+  return (
+    <Button
+      variant="outline"
+      size="lg"
+      className="group transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
+      asChild
+    >
+      <a href={href} className="flex items-center gap-2">
+        {text}
+        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </a>
+    </Button>
   )
 }
 
@@ -270,23 +303,27 @@ function FeatureCard({ icon, title, description }) {
 function MembershipCard({ title, price, period, features, buttonText, highlighted }) {
   return (
     <div
-      className={`${
-        highlighted ? "bg-primary text-white" : "bg-card text-card-foreground"
-      } p-6 rounded-lg shadow-md`}
+      className={`rounded-lg p-6 shadow-md flex flex-col ${highlighted ? "bg-primary text-primary-foreground ring-2 ring-primary" : "bg-card"}`}
     >
-      <h3 className="text-2xl font-bold mb-4">{title}</h3>
-      <p className="text-2xl font-semibold mb-4">
-        {price} <span className="text-lg">/{period}</span>
-      </p>
-      <ul className="space-y-2 mb-4">
+      <h3 className="text-2xl font-bold mb-2 text-center">{title}</h3>
+      <div className="text-center mb-6">
+        <span className="text-3xl font-bold">{price}</span>
+        <span className="text-sm"> {period}</span>
+      </div>
+      <ul className="mb-6 space-y-2 flex-1">
         {features.map((feature, index) => (
-          <li key={index}>{feature}</li>
+          <li key={index} className="flex items-start">
+            <span className="mr-2">✓</span>
+            <span>{feature}</span>
+          </li>
         ))}
       </ul>
       <button
-        className={`${
-          highlighted ? "bg-white text-primary" : "bg-primary text-white"
-        } font-bold py-2 px-4 rounded-md w-full`}
+        className={`py-2 px-4 rounded-md font-bold ${
+          highlighted
+            ? "bg-white text-primary hover:bg-white/90"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
+        }`}
       >
         {buttonText}
       </button>
@@ -297,21 +334,32 @@ function MembershipCard({ title, price, period, features, buttonText, highlighte
 // Component for trainer cards
 function TrainerCard({ image, name, specialty }) {
   return (
-    <div className="bg-card rounded-lg p-6 shadow-md text-center">
-      <img src={image} alt={name} className="w-full h-56 object-cover rounded-lg mb-4" />
-      <h3 className="text-xl font-bold mb-2">{name}</h3>
-      <p className="text-muted-foreground">{specialty}</p>
+    <div className="bg-card rounded-lg shadow-md overflow-hidden">
+      <div className="relative h-64 w-full">
+        <img 
+          src={image || "/placeholder.svg"} 
+          alt={name} 
+          className="object-cover w-full h-full" 
+        />
+      </div>
+      <div className="p-4 text-center">
+        <h3 className="text-xl font-bold">{name}</h3>
+        <p className="text-muted-foreground">{specialty}</p>
+      </div>
     </div>
   )
 }
 
-// Component for testimonials
+// Component for testimonial cards
 function TestimonialCard({ quote, author, role }) {
   return (
     <div className="bg-card rounded-lg p-6 shadow-md">
-      <p className="text-muted-foreground mb-4">"{quote}"</p>
-      <p className="font-semibold">{author}</p>
-      <p className="text-muted-foreground">{role}</p>
+      <p className="italic mb-4">"{quote}"</p>
+      <div>
+        <p className="font-bold">{author}</p>
+        <p className="text-sm text-muted-foreground">{role}</p>
+      </div>
     </div>
   )
 }
+
