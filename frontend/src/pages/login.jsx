@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 
+import { useNavigate } from "react-router-dom"
+
 export default function Login() {
+  
+  const navigate = useNavigate();
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -20,6 +24,7 @@ export default function Login() {
     e.preventDefault()
     try {
       await login({ username, password })
+      navigate('/');
       // Handle successful login, e.g., redirect
     } catch (error) {
       // Error is handled by the context
