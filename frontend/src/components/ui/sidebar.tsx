@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom" // Используем React Router Link
+import { Link, useLocation } from "react-router-dom" // Используем React Router Link
 import { Home, Dumbbell, Users, Calendar, Clock, Info, Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 export default function Sidebar() {
-  const [active, setActive] = useState("home")
+  const location = useLocation()
+  const currentPath = location.pathname.substring(1) || "home"
   const [sidebarWidth, setSidebarWidth] = useState(256)
 
   // Определяем, показывать ли текст или только иконки
@@ -78,9 +79,8 @@ export default function Sidebar() {
                 className={cn(
                   "group flex items-center py-3 text-sm font-medium rounded-md",
                   showText ? "px-2" : "px-0 justify-center",
-                  active === item.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
+                  currentPath === item.id ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
                 )}
-                onClick={() => setActive(item.id)}
                 title={!showText ? item.label : ""}
               >
                 <div className={showText ? "mr-3" : "mr-0"}>{item.icon}</div>

@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Link } from "react-router-dom" // Используем React Router Link
+import { Link, useLocation } from "react-router-dom" // Используем React Router Link и useLocation
 import { Home, Dumbbell, Users, Phone } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function MobileNavbar() {
-  const [active, setActive] = useState("home")
+  const location = useLocation()
+  const currentPath = location.pathname.substring(1) || "home"
 
   const menuItems = [
     { id: "home", label: "Главная", icon: <Home className="h-5 w-5" /> },
@@ -24,9 +25,8 @@ export default function MobileNavbar() {
             to={`/${item.id}`} // Используем to вместо href
             className={cn(
               "flex flex-col items-center justify-center py-3",
-              active === item.id ? "text-primary" : "text-muted-foreground",
+              currentPath === item.id ? "text-primary" : "text-muted-foreground",
             )}
-            onClick={() => setActive(item.id)}
           >
             <div className="mb-1">{item.icon}</div>
             <span className="text-xs">{item.label}</span>
