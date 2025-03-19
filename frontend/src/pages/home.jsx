@@ -1,7 +1,8 @@
 import { Dumbbell, Users, Calendar, Award, MapPin, Phone, Mail, Clock, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
+import {Link} from 'react-router-dom'
 export default function Home() {
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Main content */}
@@ -10,15 +11,15 @@ export default function Home() {
         <section className="relative h-[500px] w-full">
           <img
             src="https://img.freepik.com/free-vector/fitness-gym-room-interior-with-sport-equipment-vector-background-activity-cardio-workout-training-club-modern-bodybuilding-hall-active-recreation-lifestyle-cityscape-view-from-window_107791-23546.jpg"
-            alt="Fitness Club"
+            alt="Фитнес клуб"
             className="object-cover h-full w-full"
           />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Фитнес клуб</h1>
             <p className="text-xl md:text-2xl mb-8">Трансформируйте свое тело. Измените свою жизнь.</p>
-            <button className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg">
+            <Link to ='/login' className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg">
               Начать сейчас
-            </button>
+            </Link>
           </div>
         </section>
 

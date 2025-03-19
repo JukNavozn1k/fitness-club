@@ -15,11 +15,15 @@ function App() {
       <div className='md:ml-[var(--sidebar-width,256px)] transition-all duration-200'>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route
             path="/"
             element={
               <PrivateRoute>
-                <Home/>
+                <Routes>
+                  {/* <Route path="/me" element={<Home />} /> */}
+                </Routes>
               </PrivateRoute>
             }
           />
