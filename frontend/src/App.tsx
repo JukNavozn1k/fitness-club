@@ -19,8 +19,6 @@ function App() {
             element={
               <PrivateRoute>
                 <>
-                  
-                  
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="*" element={<Navigate to="/" />} />

@@ -30,18 +30,18 @@ async def register(schema: AuthSchema):
 
 
 @router.get('/verify-token', response_model=TokenVerifySchema)
-async def verify_token(token: str = Header()):
+async def verify_token(Authorization: str = Header()):
     try:
-        token = auth_service.parse_token(token)
+        token = auth_service.parse_token(Authorization)
         return {'valid': True}
     except Exception as e:
         print(e)
         return {'valid': False}
 
-
+    
 @router.get('/me', response_model=UserOut)
-async def me(token: str = Header()):
+async def me(Authorization: str = Header()):
     try:
-        return await user_service.retrieve_by_token(token)
+        return await user_service.retrieve_by_token(Authorization)
     except Exception:
         raise HTTPException(status_code=401, detail='Invalid token')
