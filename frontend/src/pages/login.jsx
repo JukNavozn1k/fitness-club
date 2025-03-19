@@ -1,7 +1,7 @@
-
 import { useState } from "react"
 import {Link} from "react-router-dom"
 import { Dumbbell, Eye, EyeOff } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -12,23 +12,18 @@ import { Checkbox } from "@/components/ui/checkbox"
 export default function Login() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  
+  const { login, isLoading, error } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setIsLoading(true)
-
-    // Simulate login request
     try {
-      // Here you would typically make an API call to your authentication endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("Login attempt with:", { username, password })
-      // Redirect to dashboard or show success message
+      await login({ username, password })
+      // Handle successful login, e.g., redirect
     } catch (error) {
+      // Error is handled by the context
       console.error("Login failed:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
