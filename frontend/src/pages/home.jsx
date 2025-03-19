@@ -9,7 +9,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="relative h-[500px] w-full">
           <img
-            src="/placeholder.svg?height=500&width=1200"
+            src="https://img.freepik.com/free-vector/fitness-gym-room-interior-with-sport-equipment-vector-background-activity-cardio-workout-training-club-modern-bodybuilding-hall-active-recreation-lifestyle-cityscape-view-from-window_107791-23546.jpg"
             alt="Fitness Club"
             className="object-cover h-full w-full"
           />
