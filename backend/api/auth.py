@@ -1,13 +1,13 @@
-from fastapi import APIRouter, HTTPException, status, Header
+from fastapi import APIRouter, HTTPException, status, Depends
 
 from schemas.auth import AuthSchema, TokenSchema, TokenVerifySchema
 from schemas.users import UserOut
 
 from services.users import user_service
 from services.auth import auth_service
+from core.auth import jwt_bearer, TokenGateway
 
 router = APIRouter(prefix='/auth', tags=['Authentication'])
-
 
 @router.post('/login', response_model=TokenSchema)
 async def login(schema: AuthSchema):
@@ -19,7 +19,6 @@ async def login(schema: AuthSchema):
         )
     return token
 
-
 @router.post('/register', response_model=UserOut)
 async def register(schema: AuthSchema):
     try:
@@ -28,20 +27,20 @@ async def register(schema: AuthSchema):
     except Exception:
         raise HTTPException(status_code=409, detail='User already exists')
 
-
 @router.get('/verify-token', response_model=TokenVerifySchema)
-async def verify_token(Authorization: str = Header()):
+async def verify_token(token_gateway: TokenGateway = Depends(jwt_bearer)):
     try:
-        token = auth_service.parse_token(Authorization)
+        token = token_gateway.get_token()
+        auth_service.parse_token(f"Bearer {token}")
         return {'valid': True}
     except Exception as e:
         print(e)
         return {'valid': False}
 
-    
 @router.get('/me', response_model=UserOut)
-async def me(Authorization: str = Header()):
+async def me(token_gateway: TokenGateway = Depends(jwt_bearer)):
     try:
-        return await user_service.retrieve_by_token(Authorization)
+        token = token_gateway.get_token()
+        return await user_service.retrieve_by_token(f"Bearer {token}")
     except Exception:
         raise HTTPException(status_code=401, detail='Invalid token')

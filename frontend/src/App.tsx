@@ -3,8 +3,9 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { PrivateRoute } from '@/components/PrivateRoute'
 import Sidebar from "@/components/ui/sidebar"
 import MobileNavbar from "@/components/ui/navbar"
-import Login from './pages/login'
-import Home from './pages/home'
+import Login from '@/pages/login'
+import Home from '@/pages/home'
+import NotFound from '@/pages/404'
 
 function App() {
   return (
@@ -15,18 +16,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
-            path="/*"
+            path="/"
             element={
               <PrivateRoute>
-                <>
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="*" element={<Navigate to="/" />} />
-                    </Routes>
-                </>
+                <Home/>
               </PrivateRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         </div>
         <MobileNavbar />

@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 class App(BaseSettings):
     title: str = 'FastAPI'
     version: str = '1.0.0'
-    frontend_url: str = 'http://localhost:5173'  # Add this line
+    frontend_url: str = '*'  # Add this line
 
 class Auth(BaseSettings):
     secret_key : str = 'foo'
