@@ -10,6 +10,8 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+      <Sidebar />
+      <div className='md:ml-[var(--sidebar-width,256px)] transition-all duration-200'>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
@@ -17,20 +19,21 @@ function App() {
             element={
               <PrivateRoute>
                 <>
-                  <Sidebar />
-                  <div className='md:ml-[var(--sidebar-width,256px)] transition-all duration-200'>
+                  
+                  
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
-                  </div>
-                  <MobileNavbar />
                 </>
               </PrivateRoute>
             }
           />
         </Routes>
+        </div>
+        <MobileNavbar />
       </BrowserRouter>
+     
     </AuthProvider>
   )
 }
