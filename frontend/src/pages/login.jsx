@@ -11,6 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 import { useNavigate } from "react-router-dom"
 
+import {toast} from 'sonner'
+
 export default function Login() {
   
   const navigate = useNavigate();
@@ -24,11 +26,13 @@ export default function Login() {
     e.preventDefault()
     try {
       await login({ username, password })
+      toast.success('Добро пожаловать!')
       navigate('/');
       // Handle successful login, e.g., redirect
     } catch (error) {
       // Error is handled by the context
       console.error("Login failed:", error)
+      toast.warning(`${error}`)
     }
   }
 
