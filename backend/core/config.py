@@ -40,7 +40,7 @@ class MongoDB(BaseSettings):
     mongo_db_name: str = 'fitness'  # Add default database name
 
     def get_url(self) -> str:
-        return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}/{self.mongo_db_name}"
+        return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}/"
 
 class Settings(BaseSettings):
     app: App = App()

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from api import router as api_router
 from core.config import settings
 from admin import AdminPanel, AdminAuth
-from models.mongodb import mongodb  
+from models.mongodb import mongodb
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,6 +33,3 @@ app.add_middleware(
 )
 
 app.include_router(api_router, default_response_class=ORJSONResponse)
-
-
-
