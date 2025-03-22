@@ -39,8 +39,6 @@ services:
       ports:
         - 5173:5173
 
-
-
   db:
     image: postgres:16.3-alpine3.20
     env_file:
@@ -68,7 +66,19 @@ services:
     hostname: ${TEST_DB_HOST}
     ports:
       - "${TEST_DB_PORT}:${TEST_DB_PORT}"
-   
+
+  mongo:
+    image: mongo:6.0
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    volumes:
+      - mongo_data:/data/db
 
 volumes:
   postgres_data:
+  mongo_data:
