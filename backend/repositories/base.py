@@ -29,6 +29,22 @@ class AbstractRepository(ABC):
     async def delete(self, pk: int) -> bool:
         raise NotImplementedError
 
+    @abstractmethod
+    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def retrieve_by_field(self, field_name: str, value: Any, filters: Optional[Dict[str, Any]] = None) -> Optional[Dict]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_many(self, filters: Dict, update_data: Dict) -> int:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_many(self, filters: Dict) -> int:
+        raise NotImplementedError
+
 class AbstractSQLRepository(AbstractRepository, ABC):
     def __init__(self, get_session, model):
         self.get_session = get_session
