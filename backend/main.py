@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from api import router as api_router
 from core.config import settings
 from admin import AdminPanel, AdminAuth
-from models.mongodb import mongodb  # Add this line
+from models.mongodb import mongodb  
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

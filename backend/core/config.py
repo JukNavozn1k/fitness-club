@@ -37,7 +37,7 @@ class MongoDB(BaseSettings):
     mongo_password: str = 'secret'
     mongo_host: str = '127.0.0.1'
     mongo_port: int = 27017
-    mongo_db_name: str = 'mydatabase'  # Add default database name
+    mongo_db_name: str = 'fitness'  # Add default database name
 
     def get_url(self) -> str:
         return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}/{self.mongo_db_name}"
