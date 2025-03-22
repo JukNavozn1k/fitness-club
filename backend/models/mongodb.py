@@ -4,12 +4,6 @@ from contextlib import asynccontextmanager
 
 from core.config import settings
 
-from beanie import Document
-
-class TestDocument(Document):
-    name : str
-    class Settings:
-        collection = 'skibidi'
 
 class MongoDatabase:
     def __init__(self, mongo_url: str, database_name: str, document_models: list, **kwargs):
@@ -55,4 +49,4 @@ class MongoDatabase:
         finally:
             pass  # Дополнительные действия при выходе из контекста можно добавить здесь.
 
-mongodb = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [TestDocument])
+mongodb = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [])
