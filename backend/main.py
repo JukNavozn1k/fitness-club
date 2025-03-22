@@ -19,6 +19,8 @@ async def lifespan(app: FastAPI):
 
     yield
 
+    mongodb.client.close()
+
 app = FastAPI(title=settings.app.title, version=settings.app.version, lifespan=lifespan)
 
 # Add CORS middleware
