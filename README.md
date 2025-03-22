@@ -51,6 +51,10 @@ TEST_DB_USER=gleb_test
 TEST_DB_PASS=1234
 TEST_DB_HOST=db_test
 TEST_DB_PORT=5430
+
+MONGO_INITDB_ROOT_USERNAME=mongoadmin
+MONGO_INITDB_ROOT_PASSWORD=secret
+MONGO_PORT=27017
 ```
 
 2. Запускаем docker-compose
