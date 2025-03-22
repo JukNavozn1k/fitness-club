@@ -34,7 +34,7 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def retrieve_by_field(self, field_name: str, value: Any, filters: Optional[Dict[str, Any]] = None) -> Optional[Dict]:
+    async def retrieve_by_field(self, field_name: str, value: Any) -> Optional[Dict]:
         raise NotImplementedError
 
     @abstractmethod
@@ -110,11 +110,9 @@ class AbstractSQLRepository(AbstractRepository, ABC):
                 await session.refresh(instance)
             return [self._to_dict(instance) for instance in instances]
         
-    async def retrieve_by_field(self, field_name: str, value: Any, options: Optional[List[Load]] = None, filters: Optional[Dict[str, Any]] = None) -> Optional[Dict]:
+    async def retrieve_by_field(self, field_name: str, value: Any, options: Optional[List[Load]] = None) -> Optional[Dict]:
         async with self.get_session() as session:
             query = select(self.model).filter(getattr(self.model, field_name) == value)
-            if filters: 
-                query = query.filter_by(**filters)
             if options:
                 query = query.options(*options)
             result = await session.execute(query)
