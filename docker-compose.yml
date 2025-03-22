@@ -16,7 +16,10 @@ services:
       TEST_DB_PASS: ${TEST_DB_PASS}
       TEST_DB_HOST: ${TEST_DB_HOST}
       TEST_DB_PORT: ${TEST_DB_PORT}
-
+      MONGO_USER: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
     ports:
       - "8000:8000"
     volumes:
@@ -24,20 +27,20 @@ services:
     depends_on:
       - db
       - test_db
+      - mongo
     command: >
       sh -c "uvicorn main:app --reload --host 0.0.0.0"
 
   frontend:
-      build: 
-        context: ./frontend/.
-      volumes:
-        - ./frontend/src:/frontend/src
-      depends_on:
-        - backend
-      command: npm run dev
-     
-      ports:
-        - 5173:5173
+    build: 
+      context: ./frontend/.
+    volumes:
+      - ./frontend/src:/frontend/src
+    depends_on:
+      - backend
+    command: npm run dev
+    ports:
+      - 5173:5173
 
   db:
     image: postgres:16.3-alpine3.20
