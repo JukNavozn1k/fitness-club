@@ -9,6 +9,7 @@ import MobileNavbar from "@/components/ui/navbar"
 import Login from '@/pages/login'
 import Home from '@/pages/home'
 import NotFound from '@/pages/404'
+import Schedule from '@/pages/schedule'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<Home />} />
           <Route path="/" element={<Home />} />
+          <Route path="/schedule" element={<Schedule />} />
           <Route
             path="/"
             element={
