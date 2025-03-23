@@ -1,22 +1,62 @@
+"use client"
 
 import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { scheduleData } from "@/lib/schedule-data"
+import { useFilters } from "@/components/ui/schedule-filters"
 
 export function ScheduleTable() {
   const [filteredData, setFilteredData] = useState(scheduleData)
+  const { selectedTrainers, selectedClassTypes, selectedSessionType, showOnlyMyClasses } = useFilters()
 
-  // Получаем фильтры из localStorage (в реальном приложении это может быть состояние из контекста или Redux)
+  // Применяем фильтры при их изменении
   useEffect(() => {
-    // Здесь будет логика применения фильтров
-    // Для демонстрации просто используем исходные данные
-    setFilteredData(scheduleData)
-  }, [])
+    let newData = [...scheduleData]
+
+    // Создаем новый массив с отфильтрованными классами для каждого временного слота
+    newData = newData.map((timeSlot) => {
+      let filteredClasses = [...timeSlot.classes]
+
+      // Фильтр по типу тренировки
+      if (selectedClassTypes.length > 0) {
+        filteredClasses = filteredClasses.filter((cls) => selectedClassTypes.includes(cls.name))
+      }
+
+      // Фильтр по тренеру
+      if (selectedTrainers.length > 0) {
+        filteredClasses = filteredClasses.filter((cls) => selectedTrainers.includes(cls.trainer))
+      }
+
+      // Фильтр по типу занятия (групповое/индивидуальное)
+      if (selectedSessionType) {
+        const isIndividual = selectedSessionType === "Индивидуальное"
+        filteredClasses = filteredClasses.filter((cls) => cls.isIndividual === isIndividual)
+      }
+
+      // Фильтр "только мои занятия"
+      if (showOnlyMyClasses) {
+        filteredClasses = filteredClasses.filter((cls) => cls.isMyClass)
+      }
+
+      return {
+        ...timeSlot,
+        classes: filteredClasses,
+      }
+    })
+
+    // Фильтруем временные слоты, в которых не осталось занятий
+    newData = newData.filter((timeSlot) => timeSlot.classes.length > 0)
+
+    setFilteredData(newData)
+  }, [selectedTrainers, selectedClassTypes, selectedSessionType, showOnlyMyClasses])
 
   // Обновляем функцию getClassStyle, чтобы использовать стандартные цвета
-  const getClassStyle = () => {
-    return "bg-primary/10 text-primary hover:bg-primary/20"
+  // и выделять "мои занятия"
+  const getClassStyle = (isMyClass: boolean) => {
+    return isMyClass
+      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+      : "bg-primary/10 text-primary hover:bg-primary/20"
   }
 
   // Функция для получения занятий в определенное время и день (возвращает массив)
@@ -54,7 +94,9 @@ export function ScheduleTable() {
                         <TooltipProvider key={index}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Badge className={`cursor-pointer text-xs ${getClassStyle()}`}>{classInfo.name}</Badge>
+                              <Badge className={`cursor-pointer text-xs ${getClassStyle(classInfo.isMyClass)}`}>
+                                {classInfo.name}
+                              </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
                               <div className="text-sm">
@@ -62,6 +104,7 @@ export function ScheduleTable() {
                                 <p>Тренер: {classInfo.trainer}</p>
                                 <p>Место: {classInfo.room}</p>
                                 <p>Тип: {classInfo.isIndividual ? "Индивидуальное" : "Групповое"}</p>
+                                {classInfo.isMyClass && <p className="font-semibold text-primary">Моё занятие</p>}
                               </div>
                             </TooltipContent>
                           </Tooltip>

@@ -1,12 +1,15 @@
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { scheduleData } from "@/lib/schedule-data"
+import { useFilters } from "@/components/ui/schedule-filters"
 
 export function MobileSchedule() {
   const days = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+  const [filteredData, setFilteredData] = useState(scheduleData)
+
+  const { selectedTrainers, selectedClassTypes, selectedSessionType, showOnlyMyClasses } = useFilters()
 
   // Получаем текущий день недели (0 - воскресенье, 1 - понедельник, и т.д.)
   const today = new Date().getDay()
@@ -15,11 +18,52 @@ export function MobileSchedule() {
 
   const [selectedDay, setSelectedDay] = useState(currentDay.toString())
 
+  // Применяем фильтры при их изменении
+  useEffect(() => {
+    let newData = [...scheduleData]
+
+    // Создаем новый массив с отфильтрованными классами для каждого временного слота
+    newData = newData.map((timeSlot) => {
+      let filteredClasses = [...timeSlot.classes]
+
+      // Фильтр по типу тренировки
+      if (selectedClassTypes.length > 0) {
+        filteredClasses = filteredClasses.filter((cls) => selectedClassTypes.includes(cls.name))
+      }
+
+      // Фильтр по тренеру
+      if (selectedTrainers.length > 0) {
+        filteredClasses = filteredClasses.filter((cls) => selectedTrainers.includes(cls.trainer))
+      }
+
+      // Фильтр по типу занятия (групповое/индивидуальное)
+      if (selectedSessionType) {
+        const isIndividual = selectedSessionType === "Индивидуальное"
+        filteredClasses = filteredClasses.filter((cls) => cls.isIndividual === isIndividual)
+      }
+
+      // Фильтр "только мои занятия"
+      if (showOnlyMyClasses) {
+        filteredClasses = filteredClasses.filter((cls) => cls.isMyClass)
+      }
+
+      return {
+        ...timeSlot,
+        classes: filteredClasses,
+      }
+    })
+
+    // Фильтруем временные слоты, в которых не осталось занятий
+    newData = newData.filter((timeSlot) => timeSlot.classes.length > 0)
+
+    setFilteredData(newData)
+  }, [selectedTrainers, selectedClassTypes, selectedSessionType, showOnlyMyClasses])
+
   // Функция для получения классов для определенного дня
   const getClassesForDay = (dayIndex: number) => {
     const dayClasses = []
 
-    for (const timeSlot of scheduleData) {
+    for (const timeSlot of filteredData) {
       const classesForTime = timeSlot.classes.filter((cls) => cls.day === dayIndex)
 
       if (classesForTime.length > 0) {
@@ -59,7 +103,9 @@ export function MobileSchedule() {
                         <div className="space-y-3">
                           {timeSlot.classes.map((cls, clsIndex) => (
                             <div key={clsIndex} className="flex items-start gap-3 bg-muted/30 p-3 rounded-md">
-                              <Badge className="mt-0.5">{cls.name}</Badge>
+                              <Badge className={`mt-0.5 ${cls.isMyClass ? "bg-primary text-primary-foreground" : ""}`}>
+                                {cls.name}
+                              </Badge>
                               <div>
                                 <div className="font-medium">{cls.name}</div>
                                 <div className="text-sm text-muted-foreground">Тренер: {cls.trainer}</div>
@@ -67,6 +113,9 @@ export function MobileSchedule() {
                                 <div className="text-sm text-muted-foreground">
                                   Тип: {cls.isIndividual ? "Индивидуальное" : "Групповое"}
                                 </div>
+                                {cls.isMyClass && (
+                                  <div className="text-sm font-semibold text-primary mt-1">Моё занятие</div>
+                                )}
                               </div>
                             </div>
                           ))}
