@@ -7,8 +7,8 @@ import { MobileSchedule } from "@/components/ui/mobile-schedule"
 export default function Schedule() {
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Фитнес Клуб "Энергия"</h1>
-      <p className="text-center text-muted-foreground mb-8">Расписание занятий на неделю</p>
+      <h1 className="text-3xl font-bold mb-6 text-center">Расписание занятий на неделю</h1>
+      <p className="text-center text-muted-foreground mb-8"></p>
 
       <div className="mb-8">
         <WeekSelector />
