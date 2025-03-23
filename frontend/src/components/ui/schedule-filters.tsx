@@ -172,22 +172,24 @@ export function ScheduleFilters() {
         <div className="flex flex-wrap gap-2 pt-2">
           {selectedClassTypes.map((classType) => (
             <Badge key={`class-${classType}`} variant="secondary" className="flex items-center gap-1">
+             
               {classType}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => removeFilter("class", classType)} />
+              <span><X className="h-3 w-3 cursor-pointer" onClick={() => removeFilter("class", classType)} /> </span>
             </Badge>
+           
           ))}
 
           {selectedTrainers.map((trainer) => (
             <Badge key={`trainer-${trainer}`} variant="secondary" className="flex items-center gap-1">
               {trainer}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => removeFilter("trainer", trainer)} />
+              <span><X className="h-3 w-3 cursor-pointer" onClick={() => removeFilter("trainer", trainer)} /></span>
             </Badge>
           ))}
 
           {selectedSessionType && (
             <Badge variant="secondary" className="flex items-center gap-1">
               {selectedSessionType}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => removeFilter("session", selectedSessionType)} />
+              <span><X className="h-3 w-3 cursor-pointer" onClick={() => removeFilter("session", selectedSessionType)} /></span>
             </Badge>
           )}
         </div>
