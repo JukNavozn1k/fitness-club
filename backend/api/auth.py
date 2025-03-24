@@ -3,8 +3,8 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from schemas.auth import AuthSchema, TokenSchema, TokenVerifySchema
 from schemas.users import UserOut
 
-from services.users import user_service
-from services.auth import auth_service
+from services import user_service,auth_service
+
 from core.auth import jwt_bearer, TokenGateway
 
 router = APIRouter(prefix='/auth', tags=['Authentication'])

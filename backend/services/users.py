@@ -1,8 +1,4 @@
 import bcrypt
-from services.auth import auth_service
-from repositories.users import sql_user_repository
-
-
 class UserService:
     def __init__(self, repository, auth_service=None):
         self.repository = repository
@@ -35,4 +31,5 @@ class UserService:
         return await self.repository.retrieve(user_id)
 
 
-user_service = UserService(sql_user_repository, auth_service)
+def get_user_service(user_repository, auth_service):
+    return UserService(user_repository, auth_service)

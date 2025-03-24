@@ -15,5 +15,5 @@ class UserSQLRepository(AbstractSQLRepository):
 
 
 
-
-sql_user_repository = UserSQLRepository(db.get_session, User)
+def get_user_repository():
+    return UserSQLRepository(db.get_session, User)
