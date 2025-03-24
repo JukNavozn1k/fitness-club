@@ -1,50 +1,22 @@
-from sqlalchemy import Integer, String,ForeignKey
+from sqlalchemy import Integer, String, Enum, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .database import Base
-
+from enum import Enum as PyEnum
 from typing import List
+from datetime import datetime
 
-# Модель Role
-class Role(Base):
-    __tablename__ = 'roles'
-    
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
-    
-    # Связь с пользователями через ассоциативную таблицу
-    users: Mapped[List["User"]] = relationship("User", secondary="user_roles", back_populates="roles")
-    
-    # Связь с правами через ассоциативную таблицу
-    permissions: Mapped[List["Permission"]] = relationship("Permission", secondary="role_permissions", back_populates="roles")
+# Перечисление ролей
+class RoleEnum(PyEnum):
+    ADMIN = "admin"
+    TRAINER = "trainer"
+    MEMBER = "member"
 
-# Модель Permission
-class Permission(Base):
-    __tablename__ = 'permissions'
-    
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    
-    # Связь с ролями через ассоциативную таблицу
-    roles: Mapped[List["Role"]] = relationship("Role", secondary="role_permissions", back_populates="permissions")
-
-# Ассоциативная модель для User <-> Role
-class UserRole(Base):
-    __tablename__ = "user_roles"
-    
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
-    role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), primary_key=True)
-    
-    # Не нужен явный relationship, поскольку они уже прописаны в моделях User и Role
-
-# Ассоциативная модель для Role <-> Permission
-class RolePermission(Base):
-    __tablename__ = "role_permissions"
-    
-    role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), primary_key=True)
-    permission_id: Mapped[int] = mapped_column(Integer, ForeignKey("permissions.id"), primary_key=True)
-    
-    # Не нужен явный relationship, поскольку они уже прописаны в моделях Role и Permission
-
+# Перечисление разрешений
+class PermissionEnum(PyEnum):
+    CREATE_WORKOUT = "create_workout"
+    DELETE_WORKOUT = "delete_workout"
+    UPDATE_WORKOUT = "update_workout"
+    VIEW_WORKOUT = "view_workout"
 
 class User(Base):
     __tablename__ = 'users'
@@ -52,6 +24,6 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(128), nullable=False)
-    
-    # Связь с ролями через ассоциативную таблицу
-    roles: Mapped[List["Role"]] = relationship("Role", secondary="user_roles", back_populates="users")
+    role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), nullable=False, default=RoleEnum.MEMBER)
+    permissions: Mapped[List[PermissionEnum]] = mapped_column(Enum(PermissionEnum), nullable=False)
+    joined_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
