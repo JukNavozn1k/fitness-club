@@ -16,10 +16,7 @@ services:
       TEST_DB_PASS: ${TEST_DB_PASS}
       TEST_DB_HOST: ${TEST_DB_HOST}
       TEST_DB_PORT: ${TEST_DB_PORT}
-      MONGO_USER: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_HOST: ${MONGO_HOST}
-      MONGO_PORT: ${MONGO_PORT}
+   
     ports:
       - "8000:8000"
     volumes:
@@ -27,7 +24,6 @@ services:
     depends_on:
       - db
       - test_db
-      - mongo
     command: >
       sh -c "uvicorn main:app --reload --host 0.0.0.0"
 
@@ -70,18 +66,5 @@ services:
     ports:
       - "${TEST_DB_PORT}:${TEST_DB_PORT}"
 
-  mongo:
-    image: mongo:6.0
-    env_file:
-      - .env
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-    ports:
-      - "${MONGO_PORT}:${MONGO_PORT}"
-    volumes:
-      - mongo_data:/data/db
-
 volumes:
   postgres_data:
-  mongo_data:

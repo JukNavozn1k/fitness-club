@@ -32,20 +32,11 @@ class Database(BaseSettings):
             return f"postgresql+asyncpg://{self.test_db_user}:{self.test_db_pass}@{self.test_db_host}:{self.test_db_port}/{self.test_db_name}"
         return f"postgresql+asyncpg://{self.db_user}:{self.db_pass}@{self.db_host}:{self.db_port}/{self.db_name}"
 
-class MongoDB(BaseSettings):
-    mongo_user: str = 'mongoadmin'
-    mongo_password: str = 'secret'
-    mongo_host: str = '127.0.0.1'
-    mongo_port: int = 27017
-    mongo_db_name: str = 'fitness'  # Add default database name
-
-    def get_url(self) -> str:
-        return f"mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_host}:{self.mongo_port}/"
 
 class Settings(BaseSettings):
     app: App = App()
     db: Database = Database()
     auth: Auth = Auth()
-    mongo: MongoDB = MongoDB()
+   
 
 settings = Settings()
