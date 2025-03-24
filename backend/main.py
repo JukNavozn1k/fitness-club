@@ -7,6 +7,14 @@ from core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  
+    import models 
+    from admin.auth import AdminAuth
+    from admin.panel import AdminPanel
+    admin_auth = AdminAuth(settings.auth.secret_key)
+    admin_panel = AdminPanel(models, admin_auth)
+    
+    admin_panel.init_app(app)
+    admin_panel.auto_register_all_models()
     yield
 
 

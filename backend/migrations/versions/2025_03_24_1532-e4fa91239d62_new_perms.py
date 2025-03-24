@@ -1,8 +1,8 @@
-"""user with roles
+"""new perms
 
-Revision ID: 4a3adeeff5c9
+Revision ID: e4fa91239d62
 Revises: 
-Create Date: 2025-03-24 15:22:43.626569
+Create Date: 2025-03-24 15:32:12.532275
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4a3adeeff5c9'
+revision: str = 'e4fa91239d62'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,7 +25,6 @@ def upgrade() -> None:
     sa.Column('username', sa.String(length=32), nullable=False),
     sa.Column('password', sa.String(length=128), nullable=False),
     sa.Column('role', sa.Enum('ADMIN', 'TRAINER', 'MEMBER', name='roleenum'), nullable=False),
-    sa.Column('permissions', sa.Enum('CREATE_WORKOUT', 'DELETE_WORKOUT', 'UPDATE_WORKOUT', 'VIEW_WORKOUT', name='permissionenum'), nullable=False),
     sa.Column('joined_date', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')

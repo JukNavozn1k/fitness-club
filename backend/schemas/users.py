@@ -22,8 +22,7 @@ class UserBase(BaseModel):
 
 class UserOut(UserBase):
     id: int
-    role: RoleEnum = RoleEnum.member
-    permissions: List[PermissionEnum] = []
+    role: RoleEnum
     joined_date: datetime
 
     class Config:

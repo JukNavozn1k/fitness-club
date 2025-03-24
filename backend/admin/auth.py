@@ -2,7 +2,7 @@ from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
 from schemas.auth import AuthSchema
-from services.users import user_service
+from services import user_service
 
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
