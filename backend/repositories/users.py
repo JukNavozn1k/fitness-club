@@ -1,5 +1,5 @@
 from repositories.base import AbstractSQLRepository
-from models.users import User, RoleEnum, PermissionEnum
+from models.users import User, PermissionEnum
 from models.database import db
 
 class UserSQLRepository(AbstractSQLRepository):
@@ -18,17 +18,6 @@ class UserSQLRepository(AbstractSQLRepository):
         user = await self.retrieve(user_id)
         return user.role.permissions
 
-    async def is_admin(self, user_id: int) -> bool:
-        user = await self.retrieve(user_id)
-        return user.role == RoleEnum.ADMIN
-
-    async def is_trainer(self, user_id: int) -> bool:
-        user = await self.retrieve(user_id)
-        return user.role == RoleEnum.TRAINER
-
-    async def is_member(self, user_id: int) -> bool:
-        user = await self.retrieve(user_id)
-        return user.role == RoleEnum.MEMBER
-
+   
 def get_user_repository():
     return UserSQLRepository(db.get_session, User)
