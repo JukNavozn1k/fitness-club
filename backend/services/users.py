@@ -1,6 +1,4 @@
 import bcrypt
-from .rbac import user_role_service
-from repositories.rbac import sql_role_repository
 
 class UserService:
     def __init__(self, repository, auth_service=None):
@@ -17,15 +15,11 @@ class UserService:
 
     async def register(self, data: dict):
         data['password'] = self.hash_password(data['password'])
-        res = await self.repository.create(data)
-        role = await sql_role_repository.retrieve_by_field({"name": "member"})
-        if not role:
-            raise Exception("Role 'member' not found")
-        await user_role_service.assign_role_to_user({
-            "user_id": res['id'],
-            "role_id": role["id"]
-        })
-        return res
+        usr = await self.repository.retrieve_by_username(data['username'])
+        if not usr:
+            res = await self.repository.create(data)
+            return res
+        raise Exception('User already exists')
 
     def hash_password(self, password: str) -> str:
         salt = bcrypt.gensalt()
