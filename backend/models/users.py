@@ -34,5 +34,5 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(128), nullable=False)
-    role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), nullable=False)
+    role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), nullable=False, default=RoleEnum.MEMBER)
     joined_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

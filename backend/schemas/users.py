@@ -22,7 +22,7 @@ class UserBase(BaseModel):
 
 class UserOut(UserBase):
     id: int
-    role: RoleEnum
+    role: RoleEnum = RoleEnum.member
     joined_date: datetime
 
     class Config:
