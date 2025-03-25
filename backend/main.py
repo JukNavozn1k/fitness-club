@@ -5,18 +5,16 @@ from contextlib import asynccontextmanager
 from api import router as api_router
 from core.config import settings
 
+from models import mongo
+
 @asynccontextmanager
-async def lifespan(app: FastAPI):  
-    import models 
-    from admin.auth import AdminAuth
-    from admin.panel import AdminPanel
-    admin_auth = AdminAuth(settings.auth.secret_key)
-    admin_panel = AdminPanel(models, admin_auth)
-    
-    admin_panel.init_app(app)
-    admin_panel.auto_register_all_models()
+async def lifespan(app: FastAPI):
+
+    await mongo.init()  # Initialize MongoDB with Beanie
+
     yield
 
+    await mongo.dispose()  # Close MongoDB connection
 
 app = FastAPI(title=settings.app.title, version=settings.app.version, lifespan=lifespan)
 
