@@ -5,7 +5,7 @@ from schemas.users import UserOut
 
 from services import user_service,auth_service
 
-from core.auth import jwt_bearer, TokenGateway
+from dependencies.auth import jwt_bearer, TokenGateway
 
 router = APIRouter(prefix='/auth', tags=['Authentication'])
 
