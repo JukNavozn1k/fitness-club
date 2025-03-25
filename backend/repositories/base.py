@@ -181,13 +181,11 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             return result.rowcount
         
 
-
-class AbstractMongoRepository(AbstractRepository, ABC):
+class AbstractMongoRepository(ABC):
     """
-    Абстрактный репозиторий для MongoDB на базе beanie.
+    Абстрактный репозиторий для MongoDB на базе Beanie.
     Ожидается, что self.model является подклассом beanie.Document.
     """
-
     def __init__(self, model: Type[Document]):
         self.model = model
 
@@ -207,15 +205,41 @@ class AbstractMongoRepository(AbstractRepository, ABC):
         await self.model.insert_many(documents)
         return [doc.model_dump() for doc in documents]
 
+    async def _populate_field(self, document: Document, field_path: str) -> None:
+        """
+        Рекурсивное заполнение связанной сущности по заданному пути (например, "profile.test").
+        Для каждого уровня, если поле является ссылкой (Link), вызывается fetch_link.
+        """
+        parts = field_path.split('.')
+        current_obj = document
+        for part in parts:
+            # Если у текущего объекта есть метод fetch_link, пытаемся получить ссылку на поле
+            if hasattr(current_obj, 'fetch_link'):
+                # Получаем ссылку на поле из класса. Это важно для вызова fetch_link, который ожидает поле, а не значение.
+                # field_ref = getattr(current_obj.__class__, part, None)
+                field_ref = getattr(current_obj, part, None)
+                if field_ref is not None:
+                    await current_obj.fetch_link(field_ref)
+            # Переходим к следующему уровню
+            current_obj = getattr(current_obj, part, None)
+            if current_obj is None:
+                break
+
+    async def _populate_document(self, document: Document, populate: List[str]) -> None:
+        """
+        Заполняет все указанные поля для документа, поддерживая вложенные пути.
+        """
+        for field in populate:
+            await self._populate_field(document, field)
+
     async def retrieve(self, pk: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
         """
         Получение одной сущности по первичному ключу.
-        Параметр populate – список имён полей для подгрузки связанных сущностей.
+        Параметр populate – список имён полей (вложенные пути поддерживаются) для подгрузки связанных сущностей.
         """
         document = await self.model.get(pk)
         if document and populate:
-            for field in populate:
-                await document.fetch_link(field)
+            await self._populate_document(document, populate)
         return document.model_dump() if document else None
 
     async def retrieve_by_field(self, field_name: str, value: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
@@ -224,8 +248,7 @@ class AbstractMongoRepository(AbstractRepository, ABC):
         """
         document = await self.model.find_one({field_name: value})
         if document and populate:
-            for field in populate:
-                await document.fetch_link(field)
+            await self._populate_document(document, populate)
         return document.model_dump() if document else None
 
     async def list(self, filters: Optional[Dict] = None, populate: Optional[List[str]] = None) -> List[Dict]:
@@ -237,8 +260,7 @@ class AbstractMongoRepository(AbstractRepository, ABC):
         documents = await cursor.to_list()
         if populate:
             for doc in documents:
-                for field in populate:
-                    await doc.fetch_link(field)
+                await self._populate_document(doc, populate)
         return [doc.model_dump() for doc in documents]
 
     async def update(self, pk: Any, data: Dict, populate: Optional[List[str]] = None) -> Optional[Dict]:
@@ -253,8 +275,7 @@ class AbstractMongoRepository(AbstractRepository, ABC):
             setattr(document, key, value)
         await document.save()
         if populate:
-            for field in populate:
-                await document.fetch_link(field)
+            await self._populate_document(document, populate)
         return document.model_dump()
 
     async def update_many(self, filters: Dict, update_data: Dict) -> int:
@@ -281,3 +302,63 @@ class AbstractMongoRepository(AbstractRepository, ABC):
         """
         delete_result = await self.model.find(filters).delete()
         return delete_result.deleted_count
+
+    # Дополнительные методы для работы со связанными сущностями (CRUD для связанных сущностей)
+
+    async def create_related(self, parent_pk: Any, field: str, data: Dict) -> Optional[Dict]:
+        """
+        Создание связанной сущности и привязка её к родительской.
+        Предполагается, что поле является Link и может быть обновлено.
+        """
+        parent = await self.model.get(parent_pk)
+        if not parent:
+            return None
+        # Получаем ссылку на поле из класса родителя
+        field_ref = getattr(parent.__class__, field, None)
+        if field_ref is None:
+            return None
+        # Определяем тип связанной сущности.
+        # Предполагается, что Link является Generic и содержит тип связанного документа в __args__
+        try:
+            related_model = field_ref.__args__[0]
+        except (AttributeError, IndexError):
+            return None
+        # Создаём и сохраняем связанную сущность
+        related_instance = related_model(**data)
+        await related_instance.insert()
+        # Привязываем связанную сущность к родительской
+        setattr(parent, field, related_instance)
+        await parent.save()
+        return related_instance.model_dump()
+
+    async def update_related(self, parent_pk: Any, field: str, related_pk: Any, data: Dict) -> Optional[Dict]:
+        """
+        Обновление связанной сущности, привязанной к родительской.
+        """
+        parent = await self.model.get(parent_pk)
+        if not parent:
+            return None
+        related_instance = getattr(parent, field, None)
+        if not related_instance or getattr(related_instance, "id", None) != related_pk:
+            return None
+        for key, value in data.items():
+            setattr(related_instance, key, value)
+        await related_instance.save()
+        await parent.save()  # При необходимости обновляем родительский документ
+        return related_instance.model_dump()
+
+    async def delete_related(self, parent_pk: Any, field: str) -> bool:
+        """
+        Удаление связанной сущности, привязанной к родительской.
+        """
+        parent = await self.model.get(parent_pk)
+        if not parent:
+            return False
+        related_instance = getattr(parent, field, None)
+        if not related_instance:
+            return False
+        await related_instance.delete()
+        # Очищаем ссылку в родительском документе
+        setattr(parent, field, None)
+        await parent.save()
+        return True
