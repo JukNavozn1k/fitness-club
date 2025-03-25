@@ -7,7 +7,7 @@ from .mongo import MongoDatabase
 from core.config import settings
 
 from .users import UserSQL,UserMongo
-
+from .reviews import ReviewMongo
 
 # model_dir = os.path.dirname(__file__)
 
