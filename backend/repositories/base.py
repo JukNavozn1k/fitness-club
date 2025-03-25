@@ -4,7 +4,7 @@ from sqlalchemy import inspect, update, delete
 from sqlalchemy.orm import class_mapper, Load, RelationshipProperty
 from typing import List, Dict, Optional, Any
 
-from beanie import Document
+from beanie import Document,Link
 from typing import Type
 
 class AbstractRepository(ABC):
@@ -181,27 +181,54 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             return result.rowcount
         
 
+
 class AbstractMongoRepository(ABC):
     """
-    Абстрактный репозиторий для MongoDB на базе Beanie.
+    Абстрактный репозиторий для MongoDB на базе Beanie с поддержкой Link-сущностей.
     Ожидается, что self.model является подклассом beanie.Document.
     """
     def __init__(self, model: Type[Document]):
         self.model = model
 
+    async def _prepare_data_with_links(self, data: Dict) -> Dict:
+        """
+        Обрабатывает данные перед созданием документа:
+        Если какое-либо поле модели является Link и в data передан словарь,
+        то создаётся соответствующий связанный документ.
+        """
+        # Обходим все поля, определённые в модели (используем pydantic-свойства)
+        for field, field_info in self.model.__fields__.items():
+            if field in data and isinstance(data[field], dict):
+                # Проверяем, является ли тип поля Link[...] (generic)
+                field_type = field_info.outer_type_
+                if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
+                    # Получаем класс связанного документа из параметров generic
+                    linked_model = field_type.__args__[0]
+                    # Создаем экземпляр связанного документа
+                    linked_instance = linked_model(**data[field])
+                    await linked_instance.insert()  # сохраняем связанный документ
+                    data[field] = linked_instance  # подставляем готовый объект вместо dict
+        return data
+
     async def create(self, data: Dict) -> Dict:
         """
-        Создание одной сущности.
+        Создание одной сущности с поддержкой Link-сущностей.
         """
+        data = await self._prepare_data_with_links(data)
         document = self.model(**data)
         await document.insert()
         return document.model_dump()
 
     async def create_many(self, data_list: List[Dict]) -> List[Dict]:
         """
-        Создание множества сущностей.
+        Создание множества сущностей с поддержкой Link-сущностей.
+        Обрабатываем каждую запись отдельно.
         """
-        documents = [self.model(**data) for data in data_list]
+        prepared_data_list = []
+        for data in data_list:
+            prepared_data = await self._prepare_data_with_links(data)
+            prepared_data_list.append(prepared_data)
+        documents = [self.model(**data) for data in prepared_data_list]
         await self.model.insert_many(documents)
         return [doc.model_dump() for doc in documents]
 
@@ -213,14 +240,10 @@ class AbstractMongoRepository(ABC):
         parts = field_path.split('.')
         current_obj = document
         for part in parts:
-            # Если у текущего объекта есть метод fetch_link, пытаемся получить ссылку на поле
             if hasattr(current_obj, 'fetch_link'):
-                # Получаем ссылку на поле из класса. Это важно для вызова fetch_link, который ожидает поле, а не значение.
-                # field_ref = getattr(current_obj.__class__, part, None)
                 field_ref = getattr(current_obj, part, None)
                 if field_ref is not None:
                     await current_obj.fetch_link(field_ref)
-            # Переходим к следующему уровню
             current_obj = getattr(current_obj, part, None)
             if current_obj is None:
                 break
@@ -235,7 +258,7 @@ class AbstractMongoRepository(ABC):
     async def retrieve(self, pk: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
         """
         Получение одной сущности по первичному ключу.
-        Параметр populate – список имён полей (вложенные пути поддерживаются) для подгрузки связанных сущностей.
+        Если передан populate, заполняет связанные Link-сущности.
         """
         document = await self.model.get(pk)
         if document and populate:
@@ -265,12 +288,16 @@ class AbstractMongoRepository(ABC):
 
     async def update(self, pk: Any, data: Dict, populate: Optional[List[str]] = None) -> Optional[Dict]:
         """
-        Обновление сущности по первичному ключу.
-        Обновление происходит через изменение атрибутов с последующим сохранением.
+        Обновление сущности по первичному ключу с поддержкой Link-сущностей.
+        Если для Link-поля передается словарь, создаётся новый связанный документ.
         """
         document = await self.model.get(pk)
         if not document:
             return None
+
+        # Если в данных есть Link-поля, обрабатываем их отдельно
+        data = await self._prepare_data_with_links(data)
+
         for key, value in data.items():
             setattr(document, key, value)
         await document.save()
@@ -282,6 +309,7 @@ class AbstractMongoRepository(ABC):
         """
         Массовое обновление сущностей по фильтру.
         Используется оператор "$set" для обновления.
+        В update_many не обрабатываем вложенные Link-сущности, так как они обновляются отдельно.
         """
         update_result = await self.model.find(filters).update({"$set": update_data})
         return update_result.modified_count
@@ -302,5 +330,3 @@ class AbstractMongoRepository(ABC):
         """
         delete_result = await self.model.find(filters).delete()
         return delete_result.deleted_count
-
-  

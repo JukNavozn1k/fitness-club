@@ -1,7 +1,8 @@
 from pydantic import BaseModel
+from beanie import PydanticObjectId
 from datetime import datetime
 
-from beanie import PydanticObjectId
+
 
 class UserOut(BaseModel):
     id: PydanticObjectId
