@@ -10,10 +10,8 @@ from models import mongo
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    await mongo.init()  # Initialize MongoDB with Beanie
-
+    await mongo.init()  
     yield
-
     await mongo.dispose()  # Close MongoDB connection
 
 app = FastAPI(title=settings.app.title, version=settings.app.version, lifespan=lifespan)

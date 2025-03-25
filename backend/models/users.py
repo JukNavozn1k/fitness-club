@@ -1,9 +1,11 @@
 from sqlalchemy import Integer, String, Enum, DateTime
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from .database import Base
 from enum import Enum as PyEnum
-from typing import List
+
 from datetime import datetime
+
+from beanie import Document,Indexed
 
 # Перечисление разрешений
 class PermissionEnum(PyEnum):
@@ -28,7 +30,7 @@ class RoleEnum(PyEnum):
             return [PermissionEnum.VIEW_WORKOUT]
         return []
 
-class User(Base):
+class UserSQL(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -36,3 +38,13 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(128), nullable=False)
     role: Mapped[RoleEnum] = mapped_column(Enum(RoleEnum), nullable=False, default=RoleEnum.MEMBER)
     joined_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class UserMongo(Document):
+    username : Indexed(str, unique=True)
+    password : str
+
+    joined_date : datetime = datetime.utcnow()
+
+    class Settings:
+        name = 'users'

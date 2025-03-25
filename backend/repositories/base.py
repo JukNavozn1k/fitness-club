@@ -4,6 +4,9 @@ from sqlalchemy import inspect, update, delete
 from sqlalchemy.orm import class_mapper, Load, RelationshipProperty
 from typing import List, Dict, Optional, Any
 
+from beanie import Document
+from typing import Type
+
 class AbstractRepository(ABC):
     @abstractmethod
     async def create(self, data: Dict) -> Dict:
@@ -176,3 +179,105 @@ class AbstractSQLRepository(AbstractRepository, ABC):
             result = await session.execute(stmt)
             await session.commit()
             return result.rowcount
+        
+
+
+class AbstractMongoRepository(AbstractRepository, ABC):
+    """
+    Абстрактный репозиторий для MongoDB на базе beanie.
+    Ожидается, что self.model является подклассом beanie.Document.
+    """
+
+    def __init__(self, model: Type[Document]):
+        self.model = model
+
+    async def create(self, data: Dict) -> Dict:
+        """
+        Создание одной сущности.
+        """
+        document = self.model(**data)
+        await document.insert()
+        return document.model_dump()
+
+    async def create_many(self, data_list: List[Dict]) -> List[Dict]:
+        """
+        Создание множества сущностей.
+        """
+        documents = [self.model(**data) for data in data_list]
+        await self.model.insert_many(documents)
+        return [doc.model_dump() for doc in documents]
+
+    async def retrieve(self, pk: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
+        """
+        Получение одной сущности по первичному ключу.
+        Параметр populate – список имён полей для подгрузки связанных сущностей.
+        """
+        document = await self.model.get(pk)
+        if document and populate:
+            for field in populate:
+                await document.fetch_link(field)
+        return document.model_dump() if document else None
+
+    async def retrieve_by_field(self, field_name: str, value: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
+        """
+        Получение одной сущности по значению произвольного поля.
+        """
+        document = await self.model.find_one({field_name: value})
+        if document and populate:
+            for field in populate:
+                await document.fetch_link(field)
+        return document.model_dump() if document else None
+
+    async def list(self, filters: Optional[Dict] = None, populate: Optional[List[str]] = None) -> List[Dict]:
+        """
+        Получение списка сущностей с возможностью фильтрации.
+        """
+        filters = filters or {}
+        cursor = self.model.find(filters)
+        documents = await cursor.to_list()
+        if populate:
+            for doc in documents:
+                for field in populate:
+                    await doc.fetch_link(field)
+        return [doc.model_dump() for doc in documents]
+
+    async def update(self, pk: Any, data: Dict, populate: Optional[List[str]] = None) -> Optional[Dict]:
+        """
+        Обновление сущности по первичному ключу.
+        Обновление происходит через изменение атрибутов с последующим сохранением.
+        """
+        document = await self.model.get(pk)
+        if not document:
+            return None
+        for key, value in data.items():
+            setattr(document, key, value)
+        await document.save()
+        if populate:
+            for field in populate:
+                await document.fetch_link(field)
+        return document.model_dump()
+
+    async def update_many(self, filters: Dict, update_data: Dict) -> int:
+        """
+        Массовое обновление сущностей по фильтру.
+        Используется оператор "$set" для обновления.
+        """
+        update_result = await self.model.find(filters).update({"$set": update_data})
+        return update_result.modified_count
+
+    async def delete(self, pk: Any) -> bool:
+        """
+        Удаление одной сущности по первичному ключу.
+        """
+        document = await self.model.get(pk)
+        if document:
+            await document.delete()
+            return True
+        return False
+
+    async def delete_many(self, filters: Dict) -> int:
+        """
+        Массовое удаление сущностей по фильтру.
+        """
+        delete_result = await self.model.find(filters).delete()
+        return delete_result.deleted_count
