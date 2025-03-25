@@ -49,5 +49,5 @@ class AuthService:
         return self.decode_token(token, is_refresh)
 
 
-auth_service = AuthService()
-
+def get_auth_service():
+    return AuthService()

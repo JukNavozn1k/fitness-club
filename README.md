@@ -39,7 +39,6 @@ ToDo
 Пример файла .env показан ниже
 
 ```
-
 DB_NAME=gg
 DB_USER=gleb
 DB_PASS=1234

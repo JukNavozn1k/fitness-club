@@ -1,7 +1,4 @@
 import bcrypt
-from services.auth import auth_service
-from repositories.users import sql_user_repository
-
 
 class UserService:
     def __init__(self, repository, auth_service=None):
@@ -18,8 +15,11 @@ class UserService:
 
     async def register(self, data: dict):
         data['password'] = self.hash_password(data['password'])
-        res = await self.repository.create(data)
-        return res
+        usr = await self.repository.retrieve_by_username(data['username'])
+        if not usr:
+            res = await self.repository.create(data)
+            return res
+        raise Exception('User already exists')
 
     def hash_password(self, password: str) -> str:
         salt = bcrypt.gensalt()
@@ -35,4 +35,5 @@ class UserService:
         return await self.repository.retrieve(user_id)
 
 
-user_service = UserService(sql_user_repository, auth_service)
+def get_user_service(user_repository, auth_service):
+    return UserService(user_repository, auth_service)

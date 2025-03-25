@@ -1,15 +1,10 @@
 from pydantic import BaseModel
-from typing import List
-
-from .rbac import RoleOut
+from datetime import datetime
 
 # Схемы для User
 class UserBase(BaseModel):
     username: str
 
-class UserOut(UserBase):
-    id: int
-    roles: List['RoleOut'] = []
-
-    class Config:
-        from_attributes = True
+class UserOut(BaseModel):
+    username: str
+    joined_date: datetime

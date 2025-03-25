@@ -49,4 +49,3 @@ class MongoDatabase:
         finally:
             pass  # Дополнительные действия при выходе из контекста можно добавить здесь.
 
-mongodb = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [])
