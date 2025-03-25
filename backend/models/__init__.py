@@ -17,4 +17,4 @@ from .reviews import ReviewMongo
 #         importlib.import_module(f"models.{filename[:-3]}")
 
 
-mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [])
+mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [ReviewMongo,UserMongo])
