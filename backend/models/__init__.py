@@ -17,4 +17,4 @@ from beanie import Document
 class TestDoc(Document):
     name : str
 
-mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [TestDoc])
+mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [])
