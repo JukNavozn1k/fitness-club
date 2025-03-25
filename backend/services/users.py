@@ -32,7 +32,7 @@ class UserService:
     async def retrieve_by_token(self, token: str) -> dict:
         token = self.auth_service.parse_token(token)
         username = str(token['sub'])
-        return await self.repository.retrieve(username)
+        return await self.repository.retrieve_by_username(username)
 
 
 def get_user_service(user_repository, auth_service):

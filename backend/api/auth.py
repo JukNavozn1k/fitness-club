@@ -43,5 +43,5 @@ async def me(token_gateway: TokenGateway = Depends(jwt_bearer)):
         token = token_gateway.get_token()
         return await user_service.retrieve_by_token(f"Bearer {token}")
     except Exception as e:
-        print(e)
+        print(f'Error {e}')
         raise HTTPException(status_code=401, detail='Invalid token')
