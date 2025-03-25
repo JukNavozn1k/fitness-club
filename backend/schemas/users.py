@@ -1,10 +1,9 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-# Схемы для User
-class UserBase(BaseModel):
-    username: str
+from beanie import PydanticObjectId
 
 class UserOut(BaseModel):
+    id: PydanticObjectId
     username: str
     joined_date: datetime

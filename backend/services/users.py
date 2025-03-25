@@ -10,7 +10,7 @@ class UserService:
         if res is None:
             return None
         if self.check_password(data['password'], res['password']):
-            return self.auth_service.create_access_token({'sub': res['username']})
+            return self.auth_service.create_access_token({'sub': res['id']})
         return None
 
     async def register(self, data: dict):
@@ -31,8 +31,8 @@ class UserService:
 
     async def retrieve_by_token(self, token: str) -> dict:
         token = self.auth_service.parse_token(token)
-        username = str(token['sub'])
-        return await self.repository.retrieve_by_username(username)
+        id = token['sub']
+        return await self.repository.retrieve(id)
 
 
 def get_user_service(user_repository, auth_service):
