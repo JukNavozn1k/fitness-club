@@ -7,6 +7,8 @@ from datetime import datetime
 
 from beanie import Document,Indexed
 
+from pydantic import Field
+
 # Перечисление разрешений
 class PermissionEnum(PyEnum):
     CREATE_WORKOUT = "create_workout"
@@ -41,10 +43,10 @@ class UserSQL(Base):
 
 
 class UserMongo(Document):
-    username : Indexed(str, unique=True)
-    password : str
+    username: Indexed(str, unique=True) = Field(...)
+    password: str = Field(...)
 
-    joined_date : datetime = datetime.utcnow()
+    joined_date: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:
-        name = 'users'
+        name = "users"
