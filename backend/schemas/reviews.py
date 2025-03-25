@@ -9,6 +9,3 @@ class ReviewBase(BaseModel):
 
 class ReviewOut(ReviewBase):
     user: UserOut  # Здесь будет выводиться информация о пользователе через Pydantic схему
-
-    class Config:
-        orm_mode = True
