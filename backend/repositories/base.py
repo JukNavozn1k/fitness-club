@@ -193,29 +193,40 @@ class AbstractMongoRepository(AbstractRepository):
     async def _prepare_data_with_links(self, data: Dict) -> Dict:
         """
         Обрабатывает данные перед созданием документа:
-        Если какое-либо поле модели является Link и в data передан словарь,
-        то если словарь содержит идентификатор уже существующего объекта, то этот объект подставляется,
-        иначе создаётся новый связанный документ.
+        Если поле модели является Link и в data передан словарь,
+        то если словарь содержит идентификатор уже существующего объекта, 
+        этот объект подставляется. Если идентификатора нет, выполняется поиск по 
+        переданным данным, и если объект найден — он используется. 
+        В противном случае создаётся новый документ.
         """
         for field, field_info in self.model.__fields__.items():
             if field in data and isinstance(data[field], dict):
-                field_type = field_info.outer_type_
+                # Используем outer_type_ если доступен, иначе annotation
+                field_type = getattr(field_info, "outer_type_", None) or field_info.annotation
                 if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
                     linked_model = field_type.__args__[0]
                     link_data = data[field]
-                    # Пытаемся извлечь идентификатор. Можно использовать "id" или "_id"
+                    # Пытаемся извлечь идентификатор: "id" или "_id"
                     link_id = link_data.get("id") or link_data.get("_id")
                     if link_id:
-                        # Пробуем получить существующий документ
                         existing_doc = await linked_model.get(link_id)
                         if existing_doc:
                             data[field] = existing_doc
                             continue
-                    # Если документ не найден или идентификатора нет - создаём новый документ
+
+                    # Если id не указан, ищем существующие объекты по другим полям
+                    existing_docs = await linked_model.find_many(link_data)
+                    if existing_docs:
+                        data[field] = existing_docs[0]
+                        continue
+
+                    # Если ничего не найдено — создаём новый документ
                     linked_instance = linked_model(**link_data)
                     await linked_instance.insert()
                     data[field] = linked_instance
+
         return data
+
 
 
     async def create(self, data: Dict) -> Dict:
