@@ -37,8 +37,8 @@ class UserService:
 
     async def get_users(self):
         return await self.repository.list()
-    async def get_user(self,data: dict):
-        return await self.repository.retrieve(data['id'])
+    async def get_user(self,user_id: any):
+        return await self.repository.retrieve(user_id)
 
 def get_user_service(user_repository, auth_service):
     return UserService(user_repository, auth_service)

@@ -1,10 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,HTTPException,status
 
 from schemas.users import UserOut
 from typing import List
 from services import user_service
-
-from schemas.base import EntityBase
 
 router = APIRouter(prefix='/users', tags=['Users'])
 
@@ -14,5 +12,7 @@ async def list():
 
 @router.get('/{user_id}',response_model=UserOut)
 async def retrieve(user_id: str):
-    user = EntityBase(id=user_id)
-    return await user_service.get_user(user.model_dump())
+    try:
+        return await user_service.get_user(user_id)
+    except: 
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail='User not found')

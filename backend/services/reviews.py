@@ -14,6 +14,9 @@ class ReviewsService:
         else: 
             return await self.repository.update(pk=user_rewiew['id'],data=data)
     
+    async def get_review(self, review_id: any):
+        return await self.repository.retrieve(pk=review_id, populate=['user'])
+
     async def get_reviews(self):
         return await self.repository.list(populate=['user'])
     
