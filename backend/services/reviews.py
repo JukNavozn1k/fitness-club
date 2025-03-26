@@ -5,6 +5,9 @@ class ReviewsService:
 
     async def add_review(self, data):
         return await self.repository.add_review(data)
+    
+    async def get_reviews(self):
+        return await self.repository.list(populate=['user'])
 
 def get_reviews_service():
     return ReviewsService(reviews_repository)

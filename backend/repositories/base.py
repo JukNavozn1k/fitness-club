@@ -194,9 +194,8 @@ class AbstractMongoRepository(AbstractRepository):
         """
         Обрабатывает данные перед созданием документа:
         Если поле модели является Link и в data передан словарь,
-        то если словарь содержит идентификатор уже существующего объекта, 
-        этот объект подставляется. Если идентификатора нет, выполняется поиск по 
-        переданным данным, и если объект найден — он используется. 
+        то если словарь содержит идентификатор уже существующего объекта, то этот объект подставляется.
+        Если идентификатора нет, выполняется поиск по фильтрам объекта и, если найден — используется.
         В противном случае создаётся новый документ.
         """
         for field, field_info in self.model.__fields__.items():
@@ -206,25 +205,26 @@ class AbstractMongoRepository(AbstractRepository):
                 if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
                     linked_model = field_type.__args__[0]
                     link_data = data[field]
-                    # Пытаемся извлечь идентификатор: "id" или "_id"
+                    # Пытаемся извлечь идентификатор (id или _id)
                     link_id = link_data.get("id") or link_data.get("_id")
                     if link_id:
+                        # Пробуем получить существующий документ по ID
                         existing_doc = await linked_model.get(link_id)
                         if existing_doc:
                             data[field] = existing_doc
                             continue
+                    else:
+                        # Если идентификатора нет, выполняем поиск по остальным полям
+                        filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
+                        existing_docs = await linked_model.find(filters).to_list()
+                        if existing_docs:
+                            data[field] = existing_docs[0]
+                            continue
 
-                    # Если id не указан, ищем существующие объекты по другим полям
-                    existing_docs = await linked_model.find_many(link_data)
-                    if existing_docs:
-                        data[field] = existing_docs[0]
-                        continue
-
-                    # Если ничего не найдено — создаём новый документ
+                    # Если ничего не найдено – создаём новый документ
                     linked_instance = linked_model(**link_data)
                     await linked_instance.insert()
                     data[field] = linked_instance
-
         return data
 
 
@@ -253,19 +253,19 @@ class AbstractMongoRepository(AbstractRepository):
 
     async def _populate_field(self, document: Document, field_path: str) -> None:
         """
-        Рекурсивное заполнение связанной сущности по заданному пути (например, "profile.test").
-        Для каждого уровня, если поле является ссылкой (Link), вызывается fetch_link.
+        Рекурсивно заполняет поле по указанному пути (например, "profile.test").
+        На каждом уровне, если поле является ссылкой (Link), вызывается fetch_link.
         """
         parts = field_path.split('.')
-        current_obj = document
+        current_document = document
         for part in parts:
-            if hasattr(current_obj, 'fetch_link'):
-                field_ref = getattr(current_obj, part, None)
-                if field_ref is not None:
-                    await current_obj.fetch_link(field_ref)
-            current_obj = getattr(current_obj, part, None)
-            if current_obj is None:
+            if hasattr(current_document, 'fetch_link'):
+                # Передаём имя поля, чтобы загрузить связанный документ
+                await current_document.fetch_link(part)
+            current_document = getattr(current_document, part, None)
+            if current_document is None:
                 break
+
 
     async def _populate_document(self, document: Document, populate: List[str]) -> None:
         """
