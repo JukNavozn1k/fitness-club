@@ -13,6 +13,9 @@ class ReviewsService:
             return await self.repository.add_review(data)
         else: 
             return await self.repository.update(pk=user_rewiew['id'],data=data)
+        
+    async def delete_user_reviews(self, user: dict):
+        return await self.repository.delete_many(filters={'user.$id' :user['id']})
     
     async def get_review(self, review_id: any):
         return await self.repository.retrieve(pk=review_id, populate=['user'])

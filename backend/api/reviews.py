@@ -30,8 +30,14 @@ async def list_review():
 async def get_review(review_id: str):
     try:
         return await reviews_service.get_review(review_id)
-    except: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Review not foun')
+    except: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Review not found')
     
     
 
+@router.delete('/')
+async def delete_my_review(user : dict = Depends(get_current_user)):
+    try:
+        return await reviews_service.delete_user_reviews(user)
+    except Exception as e : return str(e)
+    
     
