@@ -19,6 +19,12 @@ async def add_review(review: ReviewCreate ,user : dict = Depends(get_current_use
     return new_review
     
 
+@router.get('/get_my_review',response_model=ReviewOut)
+async def get_my_review(user : dict = Depends(get_current_user)):
+    reviews = await reviews_service.get_user_review(user)
+
+    return reviews
+    
 
 @router.get('/get_reviews',response_model=List[ReviewOut])
 async def list_review():

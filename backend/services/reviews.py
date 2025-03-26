@@ -8,6 +8,9 @@ class ReviewsService:
     
     async def get_reviews(self):
         return await self.repository.list(populate=['user'])
+    
+    async def get_user_review(self, user: dict):
+        return await self.repository.retrieve_by_field(field_name='user.$id',value=user['id'],populate=['user'])
 
 def get_reviews_service():
     return ReviewsService(reviews_repository)
