@@ -194,9 +194,8 @@ class AbstractMongoRepository(AbstractRepository):
         """
         Обрабатывает данные перед созданием документа:
         Если поле модели является Link и в data передан словарь,
-        то если словарь содержит идентификатор уже существующего объекта, 
-        этот объект подставляется. Если идентификатора нет, выполняется поиск по 
-        переданным данным, и если объект найден — он используется. 
+        то если словарь содержит идентификатор уже существующего объекта, то этот объект подставляется.
+        Если идентификатора нет, выполняется поиск по фильтрам объекта и, если найден — используется.
         В противном случае создаётся новый документ.
         """
         for field, field_info in self.model.__fields__.items():
@@ -206,25 +205,26 @@ class AbstractMongoRepository(AbstractRepository):
                 if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
                     linked_model = field_type.__args__[0]
                     link_data = data[field]
-                    # Пытаемся извлечь идентификатор: "id" или "_id"
+                    # Пытаемся извлечь идентификатор (id или _id)
                     link_id = link_data.get("id") or link_data.get("_id")
                     if link_id:
+                        # Пробуем получить существующий документ по ID
                         existing_doc = await linked_model.get(link_id)
                         if existing_doc:
                             data[field] = existing_doc
                             continue
+                    else:
+                        # Если идентификатора нет, выполняем поиск по остальным полям
+                        filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
+                        existing_docs = await linked_model.find(filters).to_list()
+                        if existing_docs:
+                            data[field] = existing_docs[0]
+                            continue
 
-                    # Если id не указан, ищем существующие объекты по другим полям
-                    existing_docs = await linked_model.find_many(link_data)
-                    if existing_docs:
-                        data[field] = existing_docs[0]
-                        continue
-
-                    # Если ничего не найдено — создаём новый документ
+                    # Если ничего не найдено – создаём новый документ
                     linked_instance = linked_model(**link_data)
                     await linked_instance.insert()
                     data[field] = linked_instance
-
         return data
 
 

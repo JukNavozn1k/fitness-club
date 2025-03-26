@@ -8,4 +8,4 @@ class ReviewCreate(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class ReviewOut(ReviewCreate):
-    user: PydanticObjectId  # Здесь будет выводиться информация о пользователе через Pydantic схему
+    user: UserOut  # Здесь будет выводиться информация о пользователе через Pydantic схему
