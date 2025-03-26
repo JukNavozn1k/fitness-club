@@ -253,19 +253,19 @@ class AbstractMongoRepository(AbstractRepository):
 
     async def _populate_field(self, document: Document, field_path: str) -> None:
         """
-        Рекурсивное заполнение связанной сущности по заданному пути (например, "profile.test").
-        Для каждого уровня, если поле является ссылкой (Link), вызывается fetch_link.
+        Рекурсивно заполняет поле по указанному пути (например, "profile.test").
+        На каждом уровне, если поле является ссылкой (Link), вызывается fetch_link.
         """
         parts = field_path.split('.')
-        current_obj = document
+        current_document = document
         for part in parts:
-            if hasattr(current_obj, 'fetch_link'):
-                field_ref = getattr(current_obj, part, None)
-                if field_ref is not None:
-                    await current_obj.fetch_link(field_ref)
-            current_obj = getattr(current_obj, part, None)
-            if current_obj is None:
+            if hasattr(current_document, 'fetch_link'):
+                # Передаём имя поля, чтобы загрузить связанный документ
+                await current_document.fetch_link(part)
+            current_document = getattr(current_document, part, None)
+            if current_document is None:
                 break
+
 
     async def _populate_document(self, document: Document, populate: List[str]) -> None:
         """
