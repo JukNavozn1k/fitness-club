@@ -182,7 +182,7 @@ class AbstractSQLRepository(AbstractRepository, ABC):
         
 
 
-class AbstractMongoRepository(ABC):
+class AbstractMongoRepository(AbstractRepository):
     """
     Абстрактный репозиторий для MongoDB на базе Beanie с поддержкой Link-сущностей.
     Ожидается, что self.model является подклассом beanie.Document.
@@ -194,21 +194,29 @@ class AbstractMongoRepository(ABC):
         """
         Обрабатывает данные перед созданием документа:
         Если какое-либо поле модели является Link и в data передан словарь,
-        то создаётся соответствующий связанный документ.
+        то если словарь содержит идентификатор уже существующего объекта, то этот объект подставляется,
+        иначе создаётся новый связанный документ.
         """
-        # Обходим все поля, определённые в модели (используем pydantic-свойства)
         for field, field_info in self.model.__fields__.items():
             if field in data and isinstance(data[field], dict):
-                # Проверяем, является ли тип поля Link[...] (generic)
                 field_type = field_info.outer_type_
                 if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
-                    # Получаем класс связанного документа из параметров generic
                     linked_model = field_type.__args__[0]
-                    # Создаем экземпляр связанного документа
-                    linked_instance = linked_model(**data[field])
-                    await linked_instance.insert()  # сохраняем связанный документ
-                    data[field] = linked_instance  # подставляем готовый объект вместо dict
+                    link_data = data[field]
+                    # Пытаемся извлечь идентификатор. Можно использовать "id" или "_id"
+                    link_id = link_data.get("id") or link_data.get("_id")
+                    if link_id:
+                        # Пробуем получить существующий документ
+                        existing_doc = await linked_model.get(link_id)
+                        if existing_doc:
+                            data[field] = existing_doc
+                            continue
+                    # Если документ не найден или идентификатора нет - создаём новый документ
+                    linked_instance = linked_model(**link_data)
+                    await linked_instance.insert()
+                    data[field] = linked_instance
         return data
+
 
     async def create(self, data: Dict) -> Dict:
         """
