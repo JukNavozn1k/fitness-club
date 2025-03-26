@@ -9,10 +9,9 @@ from models import mongo
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     await mongo.init()  
     yield
-    await mongo.dispose()  # Close MongoDB connection
+    await mongo.dispose() 
 
 app = FastAPI(title=settings.app.title, version=settings.app.version, lifespan=lifespan)
 
@@ -26,7 +25,3 @@ app.add_middleware(
 )
 
 app.include_router(api_router, default_response_class=ORJSONResponse)
-
-@app.get('/cfg')
-def cfg():
-    return settings 

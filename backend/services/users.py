@@ -35,6 +35,10 @@ class UserService:
         username = str(token['sub'])
         return await self.repository.retrieve_by_username(username)
 
+    async def get_users(self):
+        return await self.repository.list()
+    async def get_user(self,data: dict):
+        return await self.repository.retrieve(data['id'])
 
 def get_user_service(user_repository, auth_service):
     return UserService(user_repository, auth_service)
