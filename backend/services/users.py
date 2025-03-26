@@ -10,7 +10,7 @@ class UserService:
         if res is None:
             return None
         if self.check_password(data['password'], res['password']):
-            return self.auth_service.create_access_token({'sub': res['id']})
+            return self.auth_service.create_access_token({'sub': res['username']})
         return None
 
     async def register(self, data: dict):
@@ -20,6 +20,7 @@ class UserService:
             res = await self.repository.create(data)
             return res
         raise Exception('User already exists')
+        
 
     def hash_password(self, password: str) -> str:
         salt = bcrypt.gensalt()
@@ -31,8 +32,8 @@ class UserService:
 
     async def retrieve_by_token(self, token: str) -> dict:
         token = self.auth_service.parse_token(token)
-        user_id = int(token['sub'])
-        return await self.repository.retrieve(user_id)
+        username = str(token['sub'])
+        return await self.repository.retrieve_by_username(username)
 
 
 def get_user_service(user_repository, auth_service):

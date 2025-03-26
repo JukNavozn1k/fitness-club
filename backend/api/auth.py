@@ -5,7 +5,7 @@ from schemas.users import UserOut
 
 from services import user_service,auth_service
 
-from core.auth import jwt_bearer, TokenGateway
+from dependencies.auth import jwt_bearer, TokenGateway,get_current_user
 
 router = APIRouter(prefix='/auth', tags=['Authentication'])
 
@@ -24,7 +24,7 @@ async def register(schema: AuthSchema):
     try:
         user = await user_service.register(schema.model_dump())
         return user
-    except Exception:
+    except Exception as e:
         raise HTTPException(status_code=409, detail='User already exists')
 
 @router.get('/verify-token', response_model=TokenVerifySchema)
@@ -38,9 +38,9 @@ async def verify_token(token_gateway: TokenGateway = Depends(jwt_bearer)):
         return {'valid': False}
 
 @router.get('/me', response_model=UserOut)
-async def me(token_gateway: TokenGateway = Depends(jwt_bearer)):
+async def me(user: dict = Depends(get_current_user)):
     try:
-        token = token_gateway.get_token()
-        return await user_service.retrieve_by_token(f"Bearer {token}")
-    except Exception:
+        return user
+    except Exception as e:
+        print(f'Error {e}')
         raise HTTPException(status_code=401, detail='Invalid token')

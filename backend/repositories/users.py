@@ -1,5 +1,5 @@
 from repositories.base import AbstractSQLRepository,AbstractMongoRepository
-from models.users import UserSQL, PermissionEnum
+
 from models import db
 
 from models import UserMongo
@@ -12,13 +12,6 @@ class UserSQLRepository(AbstractSQLRepository):
         res = await self.retrieve_by_field('username', username)
         return res
 
-    async def has_permission(self, user_id: int, permission: PermissionEnum) -> bool:
-        user = await self.retrieve(user_id)
-        return permission in user.role.permissions
-
-    async def get_permissions(self, user_id: int) -> list[PermissionEnum]:
-        user = await self.retrieve(user_id)
-        return user.role.permissions
 
 
 class UserMongoRepository(AbstractMongoRepository):
@@ -28,14 +21,5 @@ class UserMongoRepository(AbstractMongoRepository):
         res = await self.retrieve_by_field('username', username)
         return res
 
-    async def has_permission(self, user_id: int, permission: PermissionEnum) -> bool:
-        user = await self.retrieve(user_id)
-        return permission in user.role.permissions
-
-    async def get_permissions(self, user_id: int) -> list[PermissionEnum]:
-        user = await self.retrieve(user_id)
-        return user.role.permissions
-
-   
 def get_user_repository():
     return UserMongoRepository(UserMongo)

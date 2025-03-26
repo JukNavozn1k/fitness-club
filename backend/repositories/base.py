@@ -4,7 +4,7 @@ from sqlalchemy import inspect, update, delete
 from sqlalchemy.orm import class_mapper, Load, RelationshipProperty
 from typing import List, Dict, Optional, Any
 
-from beanie import Document
+from beanie import Document,Link
 from typing import Type
 
 class AbstractRepository(ABC):
@@ -182,40 +182,106 @@ class AbstractSQLRepository(AbstractRepository, ABC):
         
 
 
-class AbstractMongoRepository(AbstractRepository, ABC):
+class AbstractMongoRepository(AbstractRepository):
     """
-    Абстрактный репозиторий для MongoDB на базе beanie.
+    Абстрактный репозиторий для MongoDB на базе Beanie с поддержкой Link-сущностей.
     Ожидается, что self.model является подклассом beanie.Document.
     """
-
     def __init__(self, model: Type[Document]):
         self.model = model
 
+    async def _prepare_data_with_links(self, data: Dict) -> Dict:
+        """
+        Обрабатывает данные перед созданием документа:
+        Если поле модели является Link и в data передан словарь,
+        то если словарь содержит идентификатор уже существующего объекта, 
+        этот объект подставляется. Если идентификатора нет, выполняется поиск по 
+        переданным данным, и если объект найден — он используется. 
+        В противном случае создаётся новый документ.
+        """
+        for field, field_info in self.model.__fields__.items():
+            if field in data and isinstance(data[field], dict):
+                # Используем outer_type_ если доступен, иначе annotation
+                field_type = getattr(field_info, "outer_type_", None) or field_info.annotation
+                if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
+                    linked_model = field_type.__args__[0]
+                    link_data = data[field]
+                    # Пытаемся извлечь идентификатор: "id" или "_id"
+                    link_id = link_data.get("id") or link_data.get("_id")
+                    if link_id:
+                        existing_doc = await linked_model.get(link_id)
+                        if existing_doc:
+                            data[field] = existing_doc
+                            continue
+
+                    # Если id не указан, ищем существующие объекты по другим полям
+                    existing_docs = await linked_model.find_many(link_data)
+                    if existing_docs:
+                        data[field] = existing_docs[0]
+                        continue
+
+                    # Если ничего не найдено — создаём новый документ
+                    linked_instance = linked_model(**link_data)
+                    await linked_instance.insert()
+                    data[field] = linked_instance
+
+        return data
+
+
+
     async def create(self, data: Dict) -> Dict:
         """
-        Создание одной сущности.
+        Создание одной сущности с поддержкой Link-сущностей.
         """
+        data = await self._prepare_data_with_links(data)
         document = self.model(**data)
         await document.insert()
         return document.model_dump()
 
     async def create_many(self, data_list: List[Dict]) -> List[Dict]:
         """
-        Создание множества сущностей.
+        Создание множества сущностей с поддержкой Link-сущностей.
+        Обрабатываем каждую запись отдельно.
         """
-        documents = [self.model(**data) for data in data_list]
+        prepared_data_list = []
+        for data in data_list:
+            prepared_data = await self._prepare_data_with_links(data)
+            prepared_data_list.append(prepared_data)
+        documents = [self.model(**data) for data in prepared_data_list]
         await self.model.insert_many(documents)
         return [doc.model_dump() for doc in documents]
+
+    async def _populate_field(self, document: Document, field_path: str) -> None:
+        """
+        Рекурсивное заполнение связанной сущности по заданному пути (например, "profile.test").
+        Для каждого уровня, если поле является ссылкой (Link), вызывается fetch_link.
+        """
+        parts = field_path.split('.')
+        current_obj = document
+        for part in parts:
+            if hasattr(current_obj, 'fetch_link'):
+                field_ref = getattr(current_obj, part, None)
+                if field_ref is not None:
+                    await current_obj.fetch_link(field_ref)
+            current_obj = getattr(current_obj, part, None)
+            if current_obj is None:
+                break
+
+    async def _populate_document(self, document: Document, populate: List[str]) -> None:
+        """
+        Заполняет все указанные поля для документа, поддерживая вложенные пути.
+        """
+        for field in populate:
+            await self._populate_field(document, field)
 
     async def retrieve(self, pk: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
         """
         Получение одной сущности по первичному ключу.
-        Параметр populate – список имён полей для подгрузки связанных сущностей.
+        Если передан populate, заполняет связанные Link-сущности.
         """
         document = await self.model.get(pk)
         if document and populate:
-            for field in populate:
-                await document.fetch_link(field)
+            await self._populate_document(document, populate)
         return document.model_dump() if document else None
 
     async def retrieve_by_field(self, field_name: str, value: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:
@@ -224,8 +290,7 @@ class AbstractMongoRepository(AbstractRepository, ABC):
         """
         document = await self.model.find_one({field_name: value})
         if document and populate:
-            for field in populate:
-                await document.fetch_link(field)
+            await self._populate_document(document, populate)
         return document.model_dump() if document else None
 
     async def list(self, filters: Optional[Dict] = None, populate: Optional[List[str]] = None) -> List[Dict]:
@@ -237,30 +302,33 @@ class AbstractMongoRepository(AbstractRepository, ABC):
         documents = await cursor.to_list()
         if populate:
             for doc in documents:
-                for field in populate:
-                    await doc.fetch_link(field)
+                await self._populate_document(doc, populate)
         return [doc.model_dump() for doc in documents]
 
     async def update(self, pk: Any, data: Dict, populate: Optional[List[str]] = None) -> Optional[Dict]:
         """
-        Обновление сущности по первичному ключу.
-        Обновление происходит через изменение атрибутов с последующим сохранением.
+        Обновление сущности по первичному ключу с поддержкой Link-сущностей.
+        Если для Link-поля передается словарь, создаётся новый связанный документ.
         """
         document = await self.model.get(pk)
         if not document:
             return None
+
+        # Если в данных есть Link-поля, обрабатываем их отдельно
+        data = await self._prepare_data_with_links(data)
+
         for key, value in data.items():
             setattr(document, key, value)
         await document.save()
         if populate:
-            for field in populate:
-                await document.fetch_link(field)
+            await self._populate_document(document, populate)
         return document.model_dump()
 
     async def update_many(self, filters: Dict, update_data: Dict) -> int:
         """
         Массовое обновление сущностей по фильтру.
         Используется оператор "$set" для обновления.
+        В update_many не обрабатываем вложенные Link-сущности, так как они обновляются отдельно.
         """
         update_result = await self.model.find(filters).update({"$set": update_data})
         return update_result.modified_count

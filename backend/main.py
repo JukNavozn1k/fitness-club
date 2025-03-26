@@ -26,3 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, default_response_class=ORJSONResponse)
+
+@app.get('/cfg')
+def cfg():
+    return settings 
