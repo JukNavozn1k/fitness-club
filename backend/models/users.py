@@ -4,11 +4,9 @@ from .database import Base
 
 from datetime import datetime
 
-from beanie import Document,Indexed,Link
+from beanie import Document,Indexed
 
 from pydantic import Field
-
-from .reviews import ReviewMongo
 
 class UserSQL(Base):
     __tablename__ = 'users'
@@ -26,8 +24,6 @@ class UserMongo(Document):
 
     joined_date: datetime = Field(default_factory=datetime.utcnow)
 
-
-    review : Link[ReviewMongo]
 
     class Settings:
         name = "users"

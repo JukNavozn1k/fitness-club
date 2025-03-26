@@ -24,7 +24,7 @@ async def register(schema: AuthSchema):
     try:
         user = await user_service.register(schema.model_dump())
         return user
-    except Exception:
+    except Exception as e:
         raise HTTPException(status_code=409, detail='User already exists')
 
 @router.get('/verify-token', response_model=TokenVerifySchema)
