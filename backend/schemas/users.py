@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-from .base import EntityBaseMixin
+from .base import EntityBase
 
-class UserOut(EntityBaseMixin, BaseModel):
+class UserOut(EntityBase, BaseModel):
 
     username: str
     joined_date: datetime

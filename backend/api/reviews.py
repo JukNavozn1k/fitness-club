@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from dependencies.auth import get_current_user
 from services import reviews_service
 from schemas.reviews import ReviewCreate,ReviewOut
-from schemas.users import UserOut
+from schemas.base import EntityBase
 
 from typing import List
 
@@ -31,4 +31,12 @@ async def list_review():
     reviews = await reviews_service.get_reviews()
 
     return reviews
+    
+
+
+@router.get('/get_review/{review_id}')
+async def get_review(review_id: str):
+    return EntityBase(id=review_id)
+    
+
     
