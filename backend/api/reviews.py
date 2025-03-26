@@ -19,22 +19,11 @@ async def add_review(review: ReviewCreate ,user : dict = Depends(get_current_use
     return new_review
     
 
-@router.get('/get_my_review')
-async def get_my_review():
-  
-    data = {
-    "id": "67e4139ee00b9b451e3e25da",
-    "rating": 1,
-    "comment": "",
-    "user": {
-        "id": "67e406a51ed9ea88845c0c79",
-        "username": "string",
-        "joined_date": "2025-03-26T13:52:37.597000"
-    },
-    "created_at": "2025-03-26T14:47:58.349000"
-}
-    
-    return ReviewOut(**data).model_dump()
+@router.get('/get_my_reviews',response_model=List[ReviewOut])
+async def get_my_reviews(user : dict = Depends(get_current_user)):
+    reviews = await reviews_service.get_user_reviews(user)
+
+    return reviews
     
 
 @router.get('/get_reviews',response_model=List[ReviewOut])
