@@ -190,41 +190,146 @@ class AbstractMongoRepository(AbstractRepository):
     def __init__(self, model: Type[Document]):
         self.model = model
 
+    # async def _prepare_data_with_links(self, data: Dict) -> Dict:
+    #     """
+    #     Обрабатывает данные перед созданием документа:
+    #     Если поле модели является Link и в data передан словарь,
+    #     то если словарь содержит идентификатор уже существующего объекта, то этот объект подставляется.
+    #     Если идентификатора нет, выполняется поиск по фильтрам объекта и, если найден — используется.
+    #     В противном случае создаётся новый документ.
+    #     """
+    #     for field, field_info in self.model.__fields__.items():
+    #         if field in data and isinstance(data[field], dict):
+    #             # Используем outer_type_ если доступен, иначе annotation
+    #             field_type = getattr(field_info, "outer_type_", None) or field_info.annotation
+    #             if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
+    #                 linked_model = field_type.__args__[0]
+    #                 link_data = data[field]
+    #                 # Пытаемся извлечь идентификатор (id или _id)
+    #                 link_id = link_data.get("id") or link_data.get("_id")
+    #                 if link_id:
+    #                     # Пробуем получить существующий документ по ID
+    #                     existing_doc = await linked_model.get(link_id)
+    #                     if existing_doc:
+    #                         data[field] = existing_doc
+    #                         continue
+    #                 else:
+    #                     # Если идентификатора нет, выполняем поиск по остальным полям
+    #                     filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
+    #                     existing_docs = await linked_model.find(filters).to_list()
+    #                     if existing_docs:
+    #                         data[field] = existing_docs[0]
+    #                         continue
+
+    #                 # Если ничего не найдено – создаём новый документ
+    #                 linked_instance = linked_model(**link_data)
+    #                 await linked_instance.insert()
+    #                 data[field] = linked_instance
+    #     return data
+
+
+
     async def _prepare_data_with_links(self, data: Dict) -> Dict:
         """
         Обрабатывает данные перед созданием документа:
-        Если поле модели является Link и в data передан словарь,
-        то если словарь содержит идентификатор уже существующего объекта, то этот объект подставляется.
-        Если идентификатора нет, выполняется поиск по фильтрам объекта и, если найден — используется.
-        В противном случае создаётся новый документ.
+        - Если поле модели является Link, то:
+        - Если в данных присутствует id (или _id), пытается получить документ по нему.
+        - Иначе выполняет поиск по остальным полям.
+        - Если документ не найден, создаётся новый.
+        - Если поле модели является List[Link], то:
+        - Сначала для тех элементов, где передан id, агрегированно запрашиваются все документы.
+        - Для остальных элементов собираются фильтры и выполняется единый запрос с $or по всем фильтрам.
+        - Затем для каждого элемента списка:
+            * Если найден документ по id – используется он.
+            * Если по фильтру – выбирается первый подходящий.
+            * Если ничего не найдено – создаётся новый документ.
         """
         for field, field_info in self.model.__fields__.items():
-            if field in data and isinstance(data[field], dict):
+            if field in data:
                 # Используем outer_type_ если доступен, иначе annotation
                 field_type = getattr(field_info, "outer_type_", None) or field_info.annotation
-                if hasattr(field_type, '__origin__') and field_type.__origin__ is Link:
-                    linked_model = field_type.__args__[0]
-                    link_data = data[field]
-                    # Пытаемся извлечь идентификатор (id или _id)
-                    link_id = link_data.get("id") or link_data.get("_id")
-                    if link_id:
-                        # Пробуем получить существующий документ по ID
-                        existing_doc = await linked_model.get(link_id)
-                        if existing_doc:
-                            data[field] = existing_doc
-                            continue
-                    else:
-                        # Если идентификатора нет, выполняем поиск по остальным полям
-                        filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
-                        existing_docs = await linked_model.find(filters).to_list()
-                        if existing_docs:
-                            data[field] = existing_docs[0]
-                            continue
 
-                    # Если ничего не найдено – создаём новый документ
-                    linked_instance = linked_model(**link_data)
-                    await linked_instance.insert()
-                    data[field] = linked_instance
+                if hasattr(field_type, '__origin__'):
+                    origin_type = field_type.__origin__
+
+                    # Обработка одиночного Link
+                    if origin_type is Link:
+                        linked_model = field_type.__args__[0]
+                        link_data = data[field]
+                        link_id = link_data.get("id") or link_data.get("_id")
+                        if link_id:
+                            existing_doc = await linked_model.get(link_id)
+                            if existing_doc:
+                                data[field] = existing_doc
+                                continue
+                        else:
+                            filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
+                            existing_docs = await linked_model.find(filters).to_list()
+                            if existing_docs:
+                                data[field] = existing_docs[0]
+                                continue
+
+                        # Если ничего не найдено – создаём новый документ
+                        linked_instance = linked_model(**link_data)
+                        await linked_instance.insert()
+                        data[field] = linked_instance
+
+                    # Обработка списка List[Link]
+                    elif origin_type in (list, List) and hasattr(field_type.__args__[0], '__origin__') and field_type.__args__[0].__origin__ is Link:
+                        linked_model = field_type.__args__[0].__args__[0]
+                        link_data_list = data[field]
+
+                        # 1. Обработка элементов, где передан id
+                        link_ids = [link_data.get("id") or link_data.get("_id")
+                                    for link_data in link_data_list
+                                    if link_data.get("id") or link_data.get("_id")]
+                        existing_docs_dict = {}
+                        if link_ids:
+                            existing_docs = await linked_model.find({"_id": {"$in": link_ids}}).to_list()
+                            existing_docs_dict = {str(doc["_id"]): doc for doc in existing_docs}
+
+                        # 2. Для элементов без id собираем фильтры (каждый фильтр – словарь остальных полей)
+                        # При этом собираем список фильтров для агрегированного запроса.
+                        no_id_indexes = []
+                        filters_list = []
+                        for idx, link_data in enumerate(link_data_list):
+                            if not (link_data.get("id") or link_data.get("_id")):
+                                no_id_indexes.append(idx)
+                                filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
+                                filters_list.append(filters)
+
+                        # Выполняем один агрегированный запрос для всех фильтров (если они есть)
+                        aggregated_docs = []
+                        if filters_list:
+                            # Формируем список условий: для каждого фильтр-словаря условие $and: [<filter dict>]
+                            # (условие $and с одним элементом можно использовать для унификации формата)
+                            or_query = {"$or": [{"$and": [flt]} for flt in filters_list]}
+                            aggregated_docs = await linked_model.find(or_query).to_list()
+
+                        # 3. Для каждого элемента списка подбираем соответствующий документ
+                        updated_list = []
+                        for idx, link_data in enumerate(link_data_list):
+                            link_id = link_data.get("id") or link_data.get("_id")
+                            if link_id and str(link_id) in existing_docs_dict:
+                                # Если по id найден документ
+                                updated_list.append(existing_docs_dict[str(link_id)])
+                            else:
+                                # Формируем фильтр для текущего элемента
+                                filters = {k: v for k, v in link_data.items() if k not in ("id", "_id")}
+                                # Ищем первый документ из агрегированного результата, удовлетворяющий фильтру
+                                matched = None
+                                for doc in aggregated_docs:
+                                    if all(doc.get(k) == v for k, v in filters.items()):
+                                        matched = doc
+                                        break
+                                if matched:
+                                    updated_list.append(matched)
+                                else:
+                                    # Если ничего не найдено – создаём новый документ
+                                    linked_instance = linked_model(**link_data)
+                                    await linked_instance.insert()
+                                    updated_list.append(linked_instance)
+                        data[field] = updated_list
         return data
 
 
