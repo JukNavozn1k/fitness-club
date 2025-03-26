@@ -12,7 +12,7 @@ class ReviewsService:
         if not user_rewiew:
             return await self.repository.add_review(data)
         else: 
-            return await self.repository.update(pk=user_rewiew['id'],data=data, populate=['user'])
+            return await self.repository.update(pk=user_rewiew['id'],data=data)
     
     async def get_reviews(self):
         return await self.repository.list(populate=['user'])
