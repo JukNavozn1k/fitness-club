@@ -9,6 +9,8 @@ from core.config import settings
 from .users import UserSQL,UserMongo
 from .reviews import ReviewMongo
 
+from .exercises import Equipment,Exercise,ExerciseCategory
+
 # model_dir = os.path.dirname(__file__)
 
 # for filename in os.listdir(model_dir):
@@ -17,4 +19,5 @@ from .reviews import ReviewMongo
 #         importlib.import_module(f"models.{filename[:-3]}")
 
 
-mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [ReviewMongo,UserMongo])
+mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [ReviewMongo,UserMongo,
+                                                                               Equipment,Exercise, ExerciseCategory])
