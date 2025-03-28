@@ -10,6 +10,7 @@ from models import mongo
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await mongo.init()  
+    
     yield
     await mongo.dispose() 
 
@@ -25,3 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, default_response_class=ORJSONResponse)
+
+@app.get('/')
+def cfg():
+    return settings
