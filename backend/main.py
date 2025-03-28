@@ -7,10 +7,14 @@ from core.config import settings
 
 from models import mongo
 
+from services.permissions import RBACService
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await mongo.init()  
-    
+    rbac_service = RBACService()
+    await rbac_service.seed()
+
     yield
     await mongo.dispose() 
 
