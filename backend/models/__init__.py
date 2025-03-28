@@ -8,7 +8,7 @@ from core.config import settings
 
 from .users import User
 from .permissions import Permission,Role
-from .reviews import ReviewMongo
+from .reviews import Review
 
 from .exercises import Equipment,Exercise,ExerciseCategory
 
@@ -20,5 +20,6 @@ from .exercises import Equipment,Exercise,ExerciseCategory
 #         importlib.import_module(f"models.{filename[:-3]}")
 
 
-mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [ReviewMongo,User,
+mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [Review,User,
+                                                                               Permission,Role,
                                                                                Equipment,Exercise, ExerciseCategory])

@@ -1,5 +1,5 @@
 from .base import AbstractMongoRepository
-from models import ReviewMongo
+from models import Review
 
 class ReviewsRepository(AbstractMongoRepository):
     async def add_review(self, review: dict):
@@ -7,4 +7,4 @@ class ReviewsRepository(AbstractMongoRepository):
     
 
 def get_reviews_repository():
-    return ReviewsRepository(ReviewMongo)
+    return ReviewsRepository(Review)

@@ -8,7 +8,7 @@ from pydantic import Field
 
 from .users import User
 
-class ReviewMongo(Document):
+class Review(Document):
     user : Link[User]
     rating: int = Field(..., ge=1, le=5)  # Оценка от 1 до 5
     comment: str = Field(default="")
