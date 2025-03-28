@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from pydantic import Field
 from beanie import Document, Link, Indexed
 
@@ -11,6 +11,6 @@ class User(Document):
     password: str  # Хэш пароля
   
     joined_date: datetime = Field(default_factory=datetime.utcnow)
-    roles: List[Link['Role']] = Field(default=[])
+    roles: List[Link['Role']] = []
   
     
