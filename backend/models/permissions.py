@@ -20,7 +20,7 @@ class Permission(Document):
 class Role(Document):
     """Роли с наследованием и привязкой к разрешениям"""
     name: Indexed(str, unique=True)
-    permissions: List[Link[Permission]] = Field(default=[])
+    permissions: List[Link["Permission"]] = Field(default=[])
     parent_roles: List[Link["Role"]] = Field(default=[])  # Наследование ролей
     is_default: bool = Field(default=False)
     
