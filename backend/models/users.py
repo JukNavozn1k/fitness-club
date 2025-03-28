@@ -1,47 +1,16 @@
-from sqlalchemy import Integer, String, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
-from .database import Base
-
 from datetime import datetime
-
-from beanie import Document,Indexed,Link
-from typing import List
-
-from enum import Enum
-
-
+from typing import List, Optional
 from pydantic import Field
+from beanie import Document, Link, Indexed
 
-class UserSQL(Base):
-    __tablename__ = 'users'
+from .permissions import Role
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    username: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(128), nullable=False)
-   
-    joined_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-class Permission(str, Enum):
-    CREATE_USER = "create_user"
-    DELETE_USER = "delete_user"
-    EDIT_ROLES = "edit_roles"
-    VIEW_USERS = "view_users"
-
-
-
-class RoleMongo(Document):
-    name: Indexed(str, unique=True)  # type: ignore
-    permissions: List[Permission]
-    
-    class Settings:
-        name = "roles"
-
-class UserMongo(Document):
-    username: Indexed(str, unique=True) = Field(...)
-    password: str = Field(...)
-
+class User(Document):
+    """Пользовательская модель для MongoDB с RBAC"""
+    username: Indexed(str, unique=True)
+    password: str  # Хэш пароля
+    email: Optional[str] = Field(default=None, index=True)
     joined_date: datetime = Field(default_factory=datetime.utcnow)
-    roles : List[Link[RoleMongo]] = []
-
-    class Settings:
-        name = "users"
+    roles: List[Link['Role']] = Field(default=[])
+    is_active: bool = Field(default=True)
+    
