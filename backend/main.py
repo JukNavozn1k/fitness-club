@@ -13,7 +13,7 @@ from services import rbac_init_service
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await mongo.init()  
-    # await rbac_init_service.seed()
+    await rbac_init_service.seed()
     yield
     await mongo.dispose() 
 
