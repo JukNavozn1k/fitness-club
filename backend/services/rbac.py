@@ -85,7 +85,7 @@ class RBACInitializationService:
         return await self.roles_repo.get_all_roles(include_permissions=True)
     
 
-class RoleChecker:
+class RoleCheckerService:
     def __init__(self, roles_repo):
         self.roles_repo = roles_repo 
 
@@ -135,4 +135,11 @@ class RoleChecker:
                         parent_role = role_map.get(parent["id"])
                         if parent_role:
                             stack.append(parent_role)
-        return False
+        return 
+    
+
+def get_rbac_init_service(roles_repo,perms_repo):
+    return RBACInitializationService(roles_repo,perms_repo)
+
+def get_role_checker_service(roles_repo):
+    return RoleCheckerService(roles_repo)
