@@ -21,7 +21,7 @@ class ReviewsService:
         return await self.repository.retrieve(pk=review_id, populate=['user'])
 
     async def get_reviews(self):
-        return await self.repository.list(populate=['user'])
+        return await self.repository.list(populate=['*'])
     
     
 

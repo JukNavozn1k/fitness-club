@@ -2,8 +2,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from contextlib import asynccontextmanager
 
-from core.config import settings
-
 
 class MongoDatabase:
     def __init__(self, mongo_url: str, database_name: str, document_models: list, **kwargs):

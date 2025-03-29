@@ -656,25 +656,57 @@ class AbstractMongoRepository(AbstractRepository):
 
     async def _populate_field(self, document: Document, field_path: str) -> None:
         """
-        Рекурсивно заполняет поле по указанному пути (например, "profile.test").
-        На каждом уровне, если поле является ссылкой (Link), вызывается fetch_link.
+        Рекурсивно заполняет поле по указанному пути (например, "roles.permissions").
+        Сохраняет существующую логику, но добавляет обработку None-документов.
         """
+        if not document:
+            return
+
         parts = field_path.split('.')
         current_document = document
+        
         for part in parts:
             if hasattr(current_document, 'fetch_link'):
-                # Передаём имя поля, чтобы загрузить связанный документ
                 await current_document.fetch_link(part)
+            
             current_document = getattr(current_document, part, None)
             if current_document is None:
                 break
 
-
     async def _populate_document(self, document: Document, populate: List[str]) -> None:
         """
-        Заполняет все указанные поля для документа, поддерживая вложенные пути.
+        Улучшенная версия с поддержкой:
+        - wildcard (*) через fetch_all_links
+        - сохранением существующей логики вложенных полей
+        - обработкой дубликатов полей
         """
+        if not document or not populate:
+            return
+
+        # Обработка wildcard
+        if "*" in populate:
+            if hasattr(document, 'fetch_all_links'):
+                await document.fetch_all_links()
+            return
+
+        # Уникальные поля для подгрузки (без дубликатов)
+        unique_fields = set()
+        nested_fields = []
+        
         for field in populate:
+            if '.' in field:
+                # Для вложенных полей сохраняем полный путь
+                nested_fields.append(field)
+            else:
+                unique_fields.add(field)
+
+        # Подгрузка корневых полей
+        for field in unique_fields:
+            if hasattr(document, 'fetch_link'):
+                await document.fetch_link(field)
+
+        # Рекурсивная подгрузка вложенных полей
+        for field in nested_fields:
             await self._populate_field(document, field)
 
     async def retrieve(self, pk: Any, populate: Optional[List[str]] = None) -> Optional[Dict]:

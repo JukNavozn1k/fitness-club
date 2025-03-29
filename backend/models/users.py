@@ -1,29 +1,16 @@
-from sqlalchemy import Integer, String, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
-from .database import Base
-
 from datetime import datetime
-
-from beanie import Document,Indexed
-
+from typing import List
 from pydantic import Field
+from beanie import Document, Link, Indexed
 
-class UserSQL(Base):
-    __tablename__ = 'users'
+from .permissions import Role
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    username: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(128), nullable=False)
-   
-    joined_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-
-class UserMongo(Document):
-    username: Indexed(str, unique=True) = Field(...)
-    password: str = Field(...)
-
+class User(Document):
+    """Пользовательская модель для MongoDB с RBAC"""
+    username: Indexed(str, unique=True)
+    password: str  # Хэш пароля
+  
     joined_date: datetime = Field(default_factory=datetime.utcnow)
-
-
-    class Settings:
-        name = "users"
+    roles: List[Link['Role']] = []
+  
+    

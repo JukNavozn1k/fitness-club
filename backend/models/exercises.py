@@ -15,6 +15,6 @@ class Exercise(Document):
     # Связь с категорией упражнений
     category: Link[ExerciseCategory]
     # Список оборудования, необходимого для выполнения упражнения
-    equipments: Optional[List[Link[Equipment]]]
+    equipment: Link[Equipment]
     # Список подупражнений, если упражнение состоит из нескольких частей
     # sub_exercises: List[Link["Exercise"]] = []

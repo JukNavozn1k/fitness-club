@@ -1,13 +1,14 @@
 import os
 import importlib
 
-from .database import db,Base
+
 from .mongo import MongoDatabase
 
 from core.config import settings
 
-from .users import UserSQL,UserMongo
-from .reviews import ReviewMongo
+from .users import User
+from .permissions import Permission,Role
+from .reviews import Review
 
 from .exercises import Equipment,Exercise,ExerciseCategory
 
@@ -19,5 +20,6 @@ from .exercises import Equipment,Exercise,ExerciseCategory
 #         importlib.import_module(f"models.{filename[:-3]}")
 
 
-mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [ReviewMongo,UserMongo,
+mongo = MongoDatabase(settings.mongo.get_url(), settings.mongo.mongo_db_name, [Review,User,
+                                                                               Permission,Role,
                                                                                Equipment,Exercise, ExerciseCategory])
