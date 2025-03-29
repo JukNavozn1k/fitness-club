@@ -71,4 +71,4 @@ docker-compose exec backend alembic upgrade head
 После создания образа и запуска compose файла должен быть запущен backend-сервер на порту 8000.
 Проверку работоспособности можно выполнить перейдя на: http://localhost:8000/docs
 
-Frontend сервер работает на 3000 порту (http://localhost:3000)
+Frontend сервер работает на 3000 порту (http://localhost:5173)
