@@ -60,13 +60,52 @@ class RBACSettings(BaseSettings):
     
     roles: Dict[str, RBACRoleConfig] = Field(
         default={
-            "user": RBACRoleConfig(is_default=True),
+            # Клиент (обычный пользователь)
+            "client": RBACRoleConfig(
+                is_default=True,
+                permissions=[
+                    "review:create",
+                    "review:read", 
+                    "review:update",
+                    "review:delete",
+                    "profile:create",
+                    "profile:read",
+                    "profile:update",
+                    "profile:delete"
+                ],
+                description="Base role for regular users"
+            ),
+            
+            # Фитнес-тренер
+            "trainer": RBACRoleConfig(
+                permissions=[
+                    "schedule:create",
+                    "schedule:read",
+                    "schedule:update", 
+                    "schedule:delete",
+                    "program:create",
+                    "program:read",
+                    "program:update",
+                    "program:delete",
+                    "exercise:create",
+                    "exercise:read",
+                    "exercise:update",
+                    "exercise:delete",
+                    "equipment:create",
+                    "equipment:read",
+                    "equipment:update",
+                    "equipment:delete"
+                ],
+                inherits=["client"],  # Наследуем права клиента
+                description="Fitness trainer role"
+            ),
+            
+            # Администратор
             "admin": RBACRoleConfig(
                 permissions=["*"],
-                description="Full access role"
+                description="Full system access"
             )
-        },
-        description="Конфигурация ролей и их разрешений"
+        }
     )
     
     class Config:
