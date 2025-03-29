@@ -7,7 +7,7 @@ from .mongo import MongoDatabase
 from core.config import settings
 
 from .users import User
-from .permissions import Permission,Role
+from .rbac import Permission,Role
 from .reviews import Review
 
 from .exercises import Equipment,Exercise,ExerciseCategory

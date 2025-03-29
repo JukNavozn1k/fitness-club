@@ -3,7 +3,7 @@ from typing import List
 from pydantic import Field
 from beanie import Document, Link, Indexed
 
-from .permissions import Role
+from .rbac import Role
 
 class User(Document):
     """Пользовательская модель для MongoDB с RBAC"""
