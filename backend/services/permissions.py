@@ -1,7 +1,7 @@
 
 from core.config import settings
 
-from typing import List,Dict
+from typing import List,Dict,Any
 
 class RBACInitializationService:
     def __init__(self, roles_repo, perms_repo):
@@ -83,28 +83,28 @@ class RBACInitializationService:
 
     async def list_all_roles(self):
         return await self.roles_repo.get_all_roles(include_permissions=True)
+    
 
 class RoleChecker:
-    def __init__(self, roles_repo=None):
-        # Получаем репозиторий ролей через фабричную функцию, если он не передан
-        self.roles_repo = roles_repo if roles_repo is not None else get_roles_repository()
+    def __init__(self, roles_repo):
+        self.roles_repo = roles_repo 
 
     async def _load_all_roles(self) -> Dict[str, Dict[str, Any]]:
         """
-        Загружает все роли с заполненными связями (permissions, parent_roles)
-        с использованием populate=["*"] через методы абстрактного репозитория.
-        Возвращает словарь, где ключ – это идентификатор роли, а значение – документ роли.
+        Загружает все роли с выборочной подгрузкой только нужных полей:
+        - parent_roles
+        - permissions
+        Возвращает словарь { role_id: role_document }.
         """
-        # Используем метод list с populate=["*"] для загрузки всех ролей вместе со всеми связями
-        roles: List[Dict] = await self.roles_repo.list(populate=["*"])
-        # Построим мапу: { role_id: role_document }
-        role_map = { role["id"]: role for role in roles }
-        return role_map
+        # Используем метод list с выборочной подгрузкой
+        roles: List[Dict] = await self.roles_repo.list(populate=['parent_roles', 'permissions'])
+        return { role["id"]: role for role in roles }
 
     async def has_permission(self, role_id: str, permission_name: str) -> bool:
         """
         Проверяет, имеет ли роль (с учетом наследования) разрешение permission_name.
-        Сначала загружаются все роли с заполненными связями, затем по цепочке parent_roles ищется разрешение.
+        Сначала загружаются все роли с выборочной подгрузкой необходимых полей,
+        затем происходит обход по цепочке parent_roles.
         """
         role_map = await self._load_all_roles()
 
@@ -112,13 +112,11 @@ class RoleChecker:
         if role_id not in role_map:
             return False
 
-        visited = set()  # Чтобы избежать циклических ссылок
+        visited = set()
         stack = [role_map[role_id]]
 
         while stack:
             current_role = stack.pop()
-
-            # Если эта роль уже была проверена – пропускаем
             if current_role["id"] in visited:
                 continue
             visited.add(current_role["id"])
@@ -126,16 +124,15 @@ class RoleChecker:
             # Проверяем разрешения текущей роли
             if "permissions" in current_role:
                 for perm in current_role["permissions"]:
-                    # Если нашли точное совпадение или разрешение "*" (полный доступ) – возвращаем True
+                    # Проверяем имя разрешения или наличие wildcard
                     if perm.get("name") == permission_name or perm.get("name") == "*":
                         return True
 
-            # Добавляем в стек родительские роли
+            # Добавляем родительские роли в стек
             if "parent_roles" in current_role:
                 for parent in current_role["parent_roles"]:
                     if parent and "id" in parent and parent["id"] not in visited:
                         parent_role = role_map.get(parent["id"])
                         if parent_role:
                             stack.append(parent_role)
-
         return False
