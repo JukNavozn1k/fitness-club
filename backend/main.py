@@ -13,7 +13,7 @@ from services import rbac_init_service
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await mongo.init()  
-    await rbac_init_service.seed()
+    # await rbac_init_service.seed()
     yield
     await mongo.dispose() 
 
@@ -29,7 +29,3 @@ app.add_middleware(
 )
 
 app.include_router(api_router, default_response_class=ORJSONResponse)
-
-@app.get('/')
-def cfg():
-    return settings
