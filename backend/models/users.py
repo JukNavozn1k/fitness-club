@@ -13,4 +13,6 @@ class User(Document):
     joined_date: datetime = Field(default_factory=datetime.utcnow)
     roles: List[Link['Role']] = []
   
+    class Settings:
+        name = 'users'
     
